@@ -1,0 +1,28 @@
+/* App-specific styles that don't belong in Tailwind */
+.radial-gradient {
+  background: radial-gradient(circle at center, var(--tw-gradient-from), var(--tw-gradient-to));
+}
+
+.timer-glow {
+  box-shadow: 0 0 20px rgba(74, 155, 127, 0.5);
+}
+
+@keyframes radialPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+@keyframes timerTick {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

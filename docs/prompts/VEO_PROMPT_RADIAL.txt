@@ -1,0 +1,2 @@
+VEO 3 — Radial Session Timeline (Liquid Glass)
+Create a 10s loop (3840x2160, 30fps, no audio): radial ring sweeps and paints segments: Onset blue → Peak green → Tail light-blue → No Effect gray. Slow dolly-in, soft bloom, midnight gradient.

@@ -1,0 +1,43 @@
+=== OPENING PROMPT ===
+Act as the BMAD Team. Use all files in this bundle.
+Generate a full repo for the Medication Stopwatch (Liquid Glass) app.
+- Frontend: React+Vite+TS+Tailwind+Dexie+Framer Motion (PWA).
+- Timer m:ss.mmm → h:mm:ss at 60m. Labeled laps (Onset/Peak/Tail/No Effect/+Custom).
+- Include RadialTimeline (SVG arcs) and Prime chip heuristic (±20% median window).
+- History + stats, Settings (Radial/Prime/Wake-Lock), Export/Import.
+- Load product presets from `06_products/products.json` and show images from `06_products/images/*` in the Preset modal.
+
+
+=== PRD ===
+# PRD — Medication Stopwatch v1
+- Goal: stopwatch-simple dose tracking with labeled laps (Onset/Peak/Tail/No Effect) + optional notes.
+- Timer formats: m:ss.mmm; switches to h:mm:ss at 60m.
+- One-screen flow for return users: Start → Lap chips → End (≈4 taps total).
+- Local-first (IndexedDB), PWA, Apple Liquid Glass aesthetic.
+- Exclude in v1: intent selection, product search wizard, accounts.
+
+
+=== SPEC ===
+# SPEC
+Stack: React 18 + Vite + TS + Tailwind + Framer Motion + Dexie; Day.js optional.
+Components: TimerHero, ControlsBar, LapChips, RadialTimeline, LapList,
+DoseStartSheet (tiny), HistoryView, SettingsView.
+State: idle→running→paused→completed (RAF timer).
+Acceptance: Lap ≤1 tap; PWA offline; a11y; Liquid Glass tokens; RadialTimeline smooth at 60fps.
+
+
+=== API ===
+# API (stubs for v2)
+GET /api/health
+GET /api/products/search?q=
+GET /api/products/{id}
+POST /api/import
+GET /api/export
+
+
+=== DATA MODEL ===
+# Data Model (TypeScript)
+type MilestoneLabel = 'Initial Onset'|'Peak'|'Tail'|'No Effect'|string;
+interface DoseSession { id: string; medicationName?: string; capsulesTaken: number; strengthMgPerCap?: number; startTime: string; endTime?: string; notes?: string; }
+interface LapEvent { id: string; sessionId: string; label: MilestoneLabel; timestamp: string; elapsedMs: number; intensity?: number; tags?: string[]; notes?: string; }
+interface Settings { defaultMilestones: MilestoneLabel[]; customMilestones: MilestoneLabel[]; hapticsEnabled: boolean; privacyLock: boolean; enableRadial: boolean; enablePrime: boolean; }

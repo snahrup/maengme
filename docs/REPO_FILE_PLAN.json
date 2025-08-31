@@ -1,0 +1,65 @@
+[
+  {
+    "source": "02_project_prd_spec/PRD.md",
+    "dest": "docs/PRD.md"
+  },
+  {
+    "source": "02_project_prd_spec/SPEC.md",
+    "dest": "docs/SPEC.md"
+  },
+  {
+    "source": "02_project_prd_spec/API_CONTRACTS.md",
+    "dest": "docs/API_CONTRACTS.md"
+  },
+  {
+    "source": "02_project_prd_spec/DATA_MODEL.md",
+    "dest": "docs/DATA_MODEL.md"
+  },
+  {
+    "source": "02_project_prd_spec/UX_COPY.md",
+    "dest": "docs/UX_COPY.md"
+  },
+  {
+    "source": "02_project_prd_spec/TASKS.md",
+    "dest": "docs/TASKS.md"
+  },
+  {
+    "source": "02_project_prd_spec/DESIGN_TOKENS.json",
+    "dest": "app/frontend/src/design/tokens.json"
+  },
+  {
+    "source": "03_opening_prompt/CLAUDE_PASTE_BLOCK.txt",
+    "dest": "docs/prompts/CLAUDE_PASTE_BLOCK.txt"
+  },
+  {
+    "source": "03_opening_prompt/CLAUDE_START_HERE.md",
+    "dest": "docs/prompts/CLAUDE_START_HERE.md"
+  },
+  {
+    "source": "04_addons/ADDON_SPEC.md",
+    "dest": "docs/addons/RADIAL_PRIME.md"
+  },
+  {
+    "source": "05_veo_prompts/VEO_PROMPT_RADIAL.txt",
+    "dest": "docs/prompts/VEO_PROMPT_RADIAL.txt"
+  },
+  {
+    "source": "06_products/products.json",
+    "dest": "app/frontend/src/data/products.json"
+  },
+  {
+    "source": "assets",
+    "dest": "design/reference_mocks",
+    "type": "dir"
+  },
+  {
+    "source": "06_products/images",
+    "dest": "app/frontend/public/products",
+    "type": "dir"
+  },
+  {
+    "source": "01_generic_bundle",
+    "dest": "docs/team",
+    "type": "dir"
+  }
+]

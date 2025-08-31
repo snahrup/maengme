@@ -1,0 +1,7 @@
+Act as the BMAD Team. Use all files in this bundle.
+Generate a full repo for the Medication Stopwatch (Liquid Glass) app.
+- Frontend: React+Vite+TS+Tailwind+Dexie+Framer Motion (PWA).
+- Timer m:ss.mmm → h:mm:ss at 60m. Labeled laps (Onset/Peak/Tail/No Effect/+Custom).
+- Include RadialTimeline (SVG arcs) and Prime chip heuristic (±20% median window).
+- History + stats, Settings (Radial/Prime/Wake-Lock), Export/Import.
+- Load product presets from `06_products/products.json` and show images from `06_products/images/*` in the Preset modal.

@@ -1,0 +1,8 @@
+- Core timer & state
+- Lap chips + list + notes
+- RadialTimeline
+- History + stats
+- Settings (Radial/Prime/Wake-Lock)
+- Export/Import
+- PWA (manifest & SW)
+- A11y pass

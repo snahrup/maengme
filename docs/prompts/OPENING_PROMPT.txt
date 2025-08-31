@@ -1,0 +1,1 @@
+Merge the add-on features per ADDON_SPEC.md.

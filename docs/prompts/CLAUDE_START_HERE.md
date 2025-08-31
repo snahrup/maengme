@@ -1,0 +1,1 @@
+Upload folders, then paste opening_prompt_claude.txt.
