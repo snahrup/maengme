@@ -1,0 +1,2 @@
+/* Save this background image to: app/frontend/public/background.jpg */
+/* Then we'll reference it in CSS */

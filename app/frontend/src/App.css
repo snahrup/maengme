@@ -1,10 +1,22 @@
-/* App specific styles - most styling is in index.css and Tailwind */
+/* App specific styles */
 
-/* Ensure root takes full height */
+/* Ensure html and body take full height with gradient */
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #0A2A20 0%, #0F3A2A 50%, #134E3C 100%);
+  background-attachment: fixed;
+  background-size: cover;
+}
+
 #root {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  background: transparent;
 }
 
 /* Custom scrollbar for lap list */

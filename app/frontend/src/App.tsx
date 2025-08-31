@@ -1,11 +1,14 @@
 import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from './store/database';
 import { useTimer } from './hooks/useTimer';
 import { usePrimeWindows } from './hooks/usePrimeWindows';
 import { useSessionManager } from './hooks/useSessionManager';
 import { SplashScreen } from './components/SplashScreen';
+import { HomeScreen } from './components/HomeScreen';
 import { TimerDisplay } from './components/TimerDisplay';
-import { RadialTimeline } from './components/RadialTimeline';
+import { BellCurve } from './components/BellCurve';
 import { LapChip } from './components/LapChip';
 import { LapList } from './components/LapList';
 import { Logo } from './components/Logo';
@@ -15,11 +18,10 @@ import './App.css';
 const lapTypes: { type: LapType; label: string }[] = [
   { type: 'onset', label: 'Onset' },
   { type: 'peak', label: 'Peak' },
-  { type: 'tail', label: 'Tail' },
-  { type: 'no-effect', label: 'No Effect' }
+  { type: 'tail', label: 'Tail' }
 ];
 
-type AppView = 'splash' | 'timer' | 'history' | 'preset';
+type AppView = 'splash' | 'home' | 'timer' | 'history' | 'preset';
 
 function App() {
   const [currentView, setCurrentView] = useState<AppView>('splash');
@@ -31,14 +33,25 @@ function App() {
   
   const startTimeRef = useRef<number>(0);
   const { saveSession } = useSessionManager();
-  const primeWindows = usePrimeWindows(elapsed, 20);  
-  // Handle splash complete
+  const primeWindows = usePrimeWindows(elapsed, 20);
+  
+  // Get sessions for stats
+  const sessions = useLiveQuery(() => db.sessions.toArray()) || [];
+  const lastSession = sessions[0];
+  
+  // Handle splash complete - go to HOME, not timer
   const handleSplashComplete = useCallback(() => {
+    setCurrentView('home');
+  }, []);
+  
+  // Handle start session from home
+  const handleStartSession = useCallback(() => {
     setCurrentView('timer');
+    reset();
+    setLaps([]);
     start();
     startTimeRef.current = Date.now();
-  }, [start]);
-  
+  }, [start, reset]);  
   // Handle lap
   const handleLap = useCallback((type: LapType) => {
     if (state !== 'running') return;
@@ -71,132 +84,162 @@ function App() {
       'Session'
     );
     
-    // Reset for new session
+    // Go back to home
+    setCurrentView('home');
     reset();
     setLaps([]);
-    startTimeRef.current = Date.now();
-    start();
-  }, [stop, reset, start, elapsed, laps, saveSession]);
+  }, [stop, reset, elapsed, laps, saveSession]);
   
-  // Handle control actions
-  const handleControl = useCallback(() => {
-    if (state === 'idle') {
-      start();
-      startTimeRef.current = Date.now();
-    } else if (state === 'running') {
-      pause();
-    } else if (state === 'paused') {
-      resume();
+  // Handle back to home
+  const handleBackToHome = useCallback(() => {
+    if (state === 'running' || state === 'paused') {
+      if (confirm('End current session and return home?')) {
+        handleEnd();
+      }
+    } else {
+      setCurrentView('home');
     }
-  }, [state, start, pause, resume]);
+  }, [state, handleEnd]);
   
   // Check for prime windows
-  const activePrime = primeWindows.find(w => w.isActive);  
+  const activePrime = primeWindows.find(w => w.isActive);
+  
   // Render splash screen
   if (currentView === 'splash') {
     return <SplashScreen onComplete={handleSplashComplete} />;
   }
   
+  // Render home screen
+  if (currentView === 'home') {
+    return (
+      <HomeScreen
+        onStartSession={handleStartSession}
+        onViewHistory={() => setShowHistory(true)}
+        onViewPresets={() => setShowPreset(true)}
+        sessionsCount={sessions.length}
+        lastSessionDate={lastSession ? new Date(lastSession.startTime).toLocaleDateString() : undefined}
+      />
+    );
+  }  
   // Main timer view
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      {/* Main Glass Panel Container */}
-      <motion.div 
-        className="glass-panel w-full max-w-md mx-auto p-8"
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <button
-            onClick={() => setShowPreset(true)}
-            className="text-white/70 hover:text-white transition-colors text-body"
-          >
-            Preset
-          </button>
-          
-          <Logo size={32} className="opacity-70" />
-          
-          <button
-            onClick={() => setShowHistory(true)}
-            className="text-white/70 hover:text-white transition-colors text-body"
-          >
-            History
-          </button>
-        </div>
-        
-        {/* Timer Display */}
-        <div className="mb-8">
-          <TimerDisplay elapsed={elapsed} />
-        </div>
-        
-        {/* Radial Timeline */}
-        <div className="mb-8">
-          <RadialTimeline 
-            elapsed={elapsed}
-            laps={laps}
-            maxTime={300000}
-          />
-        </div>
-        
-        {/* Lap Chips */}
-        {state === 'running' && (
-          <div className="mb-8">
-            <div className="grid grid-cols-2 gap-3">
-              {lapTypes.map(({ type, label }) => {
-                const window = primeWindows.find(w => w.type === type);
-                const isPrimed = window?.isActive;
-                
-                return (
-                  <LapChip
-                    key={type}
-                    type={type}
-                    label={label}
-                    onTap={() => handleLap(type)}
-                    isHighlighted={isPrimed}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        )}
-        
-        {/* Lap List */}
-        {laps.length > 0 && (
-          <div className="mb-8 max-h-48 overflow-y-auto">
-            <LapList laps={laps} onUndo={handleUndo} />
-          </div>
-        )}
-        
-        {/* Control Buttons */}
-        <div className="flex gap-3">
-          <motion.button
-            onClick={handleControl}
-            className="flex-1 py-3 glass-button rounded-glass-lg text-white"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            {state === 'idle' ? 'Start' : state === 'running' ? 'Pause' : 'Resume'}
-          </motion.button>
-          
-          {state !== 'idle' && (
-            <motion.button
-              onClick={handleEnd}
-              className="py-3 px-6 glass-button rounded-glass-lg text-white/70"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+    <>
+      <div className="min-h-screen flex items-center justify-center p-6 bg-transparent">
+        {/* Main Glass Panel Container */}
+        <motion.div 
+          className="glass-panel w-full max-w-md mx-auto p-8"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          {/* Header */}
+          <div className="flex justify-between items-center mb-6">
+            <button
+              onClick={() => setShowPreset(true)}
+              className="text-white/70 hover:text-white transition-colors text-body"
             >
-              End
-            </motion.button>
+              Preset
+            </button>
+            
+            <div className="flex flex-col items-center">
+              <Logo size={32} className="opacity-70 mb-1" />
+              <span className="text-white/50 text-tiny">MaengMe</span>
+            </div>
+            
+            <button
+              onClick={() => setShowHistory(true)}
+              className="text-white/70 hover:text-white transition-colors text-body"
+            >
+              History
+            </button>
+          </div>
+          
+          {/* Timer Display with rounded background */}
+          <div className="mb-6 py-4 px-6 bg-glass-10 rounded-glass-xl">
+            <TimerDisplay elapsed={elapsed} />
+          </div>
+          
+          {/* Bell Curve Visualization */}
+          <div className="mb-6">
+            <BellCurve 
+              elapsed={elapsed}
+              laps={laps}
+              expectedOnset={600000}   // 10 min
+              expectedPeak={2700000}   // 45 min
+              expectedTail={5400000}   // 90 min
+            />
+          </div>
+          
+          {/* Lap Chips */}
+          {state === 'running' && (
+            <div className="mb-6">
+              <div className="flex gap-3 justify-center">
+                {lapTypes.map(({ type, label }) => {
+                  const window = primeWindows.find(w => w.type === type);
+                  const isPrimed = window?.isActive;
+                  const hasLogged = laps.some(l => l.type === type);
+                  
+                  return (
+                    <LapChip
+                      key={type}
+                      type={type}
+                      label={label}
+                      onTap={() => handleLap(type)}
+                      isHighlighted={isPrimed && !hasLogged}
+                    />
+                  );
+                })}
+              </div>
+            </div>
           )}
-        </div>
-        
-        {/* Footer */}
-        <div className="text-center mt-8">
-          <p className="text-white/30 text-tiny">Not medical advice</p>
-        </div>
-      </motion.div>
+          
+          {/* Lap List */}
+          {laps.length > 0 && (
+            <div className="mb-6 max-h-32 overflow-y-auto">
+              <LapList laps={laps} onUndo={handleUndo} />
+            </div>
+          )}
+          
+          {/* Control Buttons */}
+          <div className="flex gap-3">
+            {state === 'idle' ? (
+              <motion.button
+                onClick={handleBackToHome}
+                className="w-full py-3 glass-button rounded-glass-lg text-white"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                ← Back to Home
+              </motion.button>
+            ) : (
+              <>
+                <motion.button
+                  onClick={state === 'running' ? pause : resume}
+                  className="flex-1 py-3 glass-button rounded-glass-lg text-white"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {state === 'running' ? 'Pause' : 'Resume'}
+                </motion.button>
+                
+                <motion.button
+                  onClick={handleEnd}
+                  className="py-3 px-6 glass-button rounded-glass-lg text-white/70"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  End
+                </motion.button>
+              </>
+            )}
+          </div>
+          
+          {/* Footer */}
+          <div className="text-center mt-6">
+            <p className="text-white/30 text-tiny">Not medical advice</p>
+          </div>
+        </motion.div>
+      </div>
       
       {/* History Modal */}
       <AnimatePresence>
@@ -261,7 +304,7 @@ function App() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 }
 

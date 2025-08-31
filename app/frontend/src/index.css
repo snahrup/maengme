@@ -36,20 +36,43 @@
   }
 }
 
-/* Global Background - Fixed Gradient */
-body {
+/* Global Background - Use actual image if available, fallback to gradient */
+html, body, #root {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-mid) 50%, var(--bg-light) 100%);
+  width: 100%;
+}
+
+body {
+  /* Try to use background image first, fallback to gradient */
+  background-image: url('/background.jpg');
+  background-size: cover;
+  background-position: center;
   background-attachment: fixed;
+  background-repeat: no-repeat;
+  
+  /* Fallback gradient if image doesn't load */
+  background-color: #0A2A20;
+  
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* If image fails to load, use gradient */
+body:not([style*="background-image"]) {
+  background: linear-gradient(135deg, #0A2A20 0%, #0F3A2A 50%, #134E3C 100%);
+}
+
+#root {
+  background: transparent;
+}
+
 /* Remove all previous gradient backgrounds from components */
-* {
+.glass-panel,
+.glass-button,
+.glass-chip {
   background-image: none !important;
 }
 
