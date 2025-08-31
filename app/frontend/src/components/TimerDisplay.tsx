@@ -1,36 +1,37 @@
 import React from 'react';
-import { formatTime } from '../utils/timeFormat';
+import { motion } from 'framer-motion';
 
 interface TimerDisplayProps {
   elapsed: number;
-  label?: string;
+  className?: string;
 }
 
-export const TimerDisplay: React.FC<TimerDisplayProps> = ({ elapsed, label }) => {
-  const timeString = formatTime(elapsed);
-  const [main, sub] = timeString.includes(':') 
-    ? timeString.split('.')
-    : [timeString, ''];
+export const TimerDisplay: React.FC<TimerDisplayProps> = ({ elapsed, className = '' }) => {
+  const formatTime = (ms: number): string => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const milliseconds = Math.floor((ms % 1000) / 10);
+    
+    if (minutes >= 60) {
+      const hours = Math.floor(minutes / 60);
+      const remainingMinutes = minutes % 60;
+      return `${hours}:${remainingMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+  };
   
   return (
-    <div className="relative">
-      {label && (
-        <div className="text-text-secondary text-sm mb-2">{label}</div>
-      )}
-      
-      {/* Glass background panel */}
-      <div className="relative bg-glass-tint backdrop-blur-panel rounded-glass-xl px-8 py-6 shadow-glass border border-glass-stroke">
-        <div className="flex items-baseline justify-center">
-          <span className="text-6xl md:text-7xl font-light text-text-primary tracking-tight font-mono">
-            {main}
-          </span>
-          {sub && (
-            <span className="text-4xl md:text-5xl font-light text-text-primary/80 ml-1">
-              .{sub}
-            </span>
-          )}
-        </div>
+    <motion.div 
+      className={`text-center ${className}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="text-timer-lg font-display font-extralight text-white tabular-nums tracking-tight">
+        {formatTime(elapsed)}
       </div>
-    </div>
+    </motion.div>
   );
 };

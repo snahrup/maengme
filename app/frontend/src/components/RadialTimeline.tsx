@@ -1,110 +1,114 @@
 import React from 'react';
-import { Lap } from '../types/timer';
 import { motion } from 'framer-motion';
+import { Logo } from './Logo';
+import { Lap } from '../types/timer';
 
 interface RadialTimelineProps {
   elapsed: number;
-  maxTime?: number; // Default to 60 minutes
   laps: Lap[];
-  nextPrime?: { type: string; timeRemaining: number; median: number };
+  maxTime?: number;
 }
 
-const lapColors = {
-  onset: '#34C759',
-  peak: '#1DA1FF', 
-  tail: '#A8C6FF',
-  'no-effect': '#C8D0E0',
-  custom: '#F5F7FB'
-};
-
-export const RadialTimeline: React.FC<RadialTimelineProps> = ({
-  elapsed,
-  maxTime = 3600000, // 60 minutes default
+export const RadialTimeline: React.FC<RadialTimelineProps> = ({ 
+  elapsed, 
   laps,
-  nextPrime
+  maxTime = 300000 // 5 minutes default
 }) => {
   const radius = 120;
-  const strokeWidth = 8;
+  const strokeWidth = 2;
   const circumference = 2 * Math.PI * radius;
+  
+  // Calculate progress
   const progress = Math.min(elapsed / maxTime, 1);
   const strokeDashoffset = circumference - (progress * circumference);
+  
+  // Calculate lap positions
+  const lapAngles = laps.map(lap => ({
+    angle: (lap.elapsed / maxTime) * 360 - 90,
+    type: lap.type
+  }));
+  
   return (
-    <div className="relative w-64 h-64 mx-auto">
+    <div className="relative w-72 h-72 mx-auto">
+      {/* Logo in center */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <Logo size={96} animate={true} />
+      </div>
+      
+      {/* SVG Ring */}
       <svg
-        className="transform -rotate-90 w-full h-full"
-        viewBox="0 0 256 256"
+        className="absolute inset-0 w-full h-full -rotate-90"
+        viewBox="0 0 300 300"
       >
-        {/* Background circle */}
+        {/* Background ring */}
         <circle
-          cx="128"
-          cy="128"
+          cx="150"
+          cy="150"
           r={radius}
+          fill="none"
           stroke="rgba(255, 255, 255, 0.1)"
           strokeWidth={strokeWidth}
-          fill="none"
         />
         
-        {/* Progress circle with glow */}
+        {/* Progress ring */}
         <motion.circle
-          cx="128"
-          cy="128"
+          cx="150"
+          cy="150"
           r={radius}
-          stroke="url(#radialGradient)"
-          strokeWidth={strokeWidth}
           fill="none"
+          stroke="rgba(255, 255, 255, 0.5)"
+          strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
+          initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset }}
           transition={{ duration: 0.1, ease: "linear" }}
-          filter="url(#glow)"
+          style={{
+            filter: 'drop-shadow(0 0 10px rgba(255, 255, 255, 0.3))'
+          }}
         />
-        {/* Lap segments */}
-        {laps.map((lap, index) => {
-          const lapProgress = lap.elapsed / maxTime;
-          const lapAngle = lapProgress * 360;
-          const x = 128 + radius * Math.cos((lapAngle - 90) * Math.PI / 180);
-          const y = 128 + radius * Math.sin((lapAngle - 90) * Math.PI / 180);
-          
-          return (
-            <circle
-              key={lap.id}
-              cx={x}
-              cy={y}
-              r="4"
-              fill={lapColors[lap.type]}
-              className="drop-shadow-lg"
-            />
-          );
-        })}
         
-        {/* SVG Definitions */}
-        <defs>
-          <linearGradient id="radialGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#00D4FF" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#1DA1FF" stopOpacity="1" />
-          </linearGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
+        {/* Lap markers */}
+        {lapAngles.map((lap, index) => (
+          <g key={index} transform={`rotate(${lap.angle} 150 150)`}>
+            <circle
+              cx="150"
+              cy="30"
+              r="4"
+              fill="rgba(255, 255, 255, 0.8)"
+              style={{
+                filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.6))'
+              }}
+            />
+            <circle
+              cx="150"
+              cy="30"
+              r="6"
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.3)"
+              strokeWidth="1"
+            />
+          </g>
+        ))}
+        
+        {/* Current position indicator */}
+        <g transform={`rotate(${(progress * 360) - 90} 150 150)`}>
+          <circle
+            cx="150"
+            cy="30"
+            r="6"
+            fill="rgba(255, 255, 255, 1)"
+            style={{
+              filter: 'drop-shadow(0 0 12px rgba(255, 255, 255, 0.8))'
+            }}
+          />
+        </g>
       </svg>
-      {/* Center content - Prime hint */}
-      {nextPrime && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center transform rotate-0">
-          <div className="text-text-secondary text-sm">Next: {nextPrime.type}</div>
-          <div className="text-3xl font-light text-text-primary">
-            -{Math.floor(nextPrime.timeRemaining / 1000)}:{Math.floor(nextPrime.timeRemaining % 1000 / 10).toString().padStart(2, '0')}
-          </div>
-          <div className="text-text-secondary/60 text-xs mt-1">
-            on track - median {Math.floor(nextPrime.median / 60000)}:{Math.floor(nextPrime.median % 60000 / 1000).toString().padStart(2, '0')}
-          </div>
-        </div>
-      )}
+      
+      {/* Title below */}
+      <div className="absolute -bottom-8 left-0 right-0 text-center">
+        <p className="text-white/70 text-small">Radial Session Timeline</p>
+      </div>
     </div>
   );
 };

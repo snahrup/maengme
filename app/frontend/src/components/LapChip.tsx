@@ -1,52 +1,49 @@
 import React from 'react';
-import { LapType } from '../types/timer';
 import { motion } from 'framer-motion';
+import { LapType } from '../types/timer';
 
 interface LapChipProps {
   type: LapType;
   label: string;
   onTap: () => void;
   isHighlighted?: boolean;
-  isPrimed?: boolean;
 }
 
-const chipColors: Record<LapType, string> = {
-  'onset': 'border-glass-stroke bg-glass-tint/60',
-  'peak': 'border-accent-primary bg-accent-primary/20',
-  'tail': 'border-chip-tail bg-chip-tail/20',
-  'no-effect': 'border-glass-stroke bg-glass-tint/40',
-  'custom': 'border-glass-stroke bg-glass-tint/60'
-};
-
 export const LapChip: React.FC<LapChipProps> = ({ 
-  type, 
   label, 
-  onTap, 
-  isHighlighted = false,
-  isPrimed = false 
+  onTap,
+  isHighlighted = false
 }) => {
   return (
     <motion.button
       onClick={onTap}
-      whileTap={{ scale: 0.95 }}
       className={`
-        relative px-6 py-3 rounded-full border backdrop-blur-chip
-        transition-all duration-200
-        ${chipColors[type]}
-        ${isHighlighted ? 'ring-2 ring-accent-primary shadow-glow' : ''}
-        ${isPrimed ? 'animate-pulse-glow' : ''}
+        px-6 py-3 rounded-glass
+        backdrop-blur-md
+        border transition-all duration-200
+        ${isHighlighted 
+          ? 'bg-glass-15 border-glass-30 shadow-lg' 
+          : 'bg-glass-8 border-glass-15 hover:bg-glass-10 hover:border-glass-20'
+        }
       `}
-    >      <span className="text-text-primary font-medium text-sm">
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      animate={isHighlighted ? {
+        boxShadow: [
+          '0 0 20px rgba(255, 255, 255, 0.2)',
+          '0 0 30px rgba(255, 255, 255, 0.3)',
+          '0 0 20px rgba(255, 255, 255, 0.2)',
+        ]
+      } : {}}
+      transition={isHighlighted ? {
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut"
+      } : {}}
+    >
+      <span className={`text-body font-normal ${isHighlighted ? 'text-white' : 'text-white/70'}`}>
         {label}
       </span>
-      
-      {isPrimed && (
-        <motion.div 
-          className="absolute -top-1 -right-1 w-2 h-2 bg-accent-primary rounded-full"
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-      )}
     </motion.button>
   );
 };

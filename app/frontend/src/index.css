@@ -3,32 +3,115 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    @apply antialiased;
+  :root {
+    /* Vision Pro Glass System - Pure White Translucency */
+    --glass-white-5: rgba(255, 255, 255, 0.05);
+    --glass-white-8: rgba(255, 255, 255, 0.08);
+    --glass-white-10: rgba(255, 255, 255, 0.10);
+    --glass-white-15: rgba(255, 255, 255, 0.15);
+    --glass-white-20: rgba(255, 255, 255, 0.20);
+    
+    /* Text Hierarchy - Pure White with Opacity */
+    --text-primary: rgba(255, 255, 255, 1);
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --text-tertiary: rgba(255, 255, 255, 0.5);
+    --text-disabled: rgba(255, 255, 255, 0.3);
+    
+    /* Glass Effects */
+    --blur-sm: 10px;
+    --blur-md: 20px;
+    --blur-lg: 40px;
+    --blur-xl: 60px;
+    
+    /* Border Radius Vision Pro Style */
+    --radius-sm: 12px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+    
+    /* Green Background Gradient */
+    --bg-dark: #0A2A20;
+    --bg-mid: #0F3A2A;
+    --bg-light: #134E3C;
   }
-  
-  body {
-    @apply m-0 p-0;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  
-  /* Custom scrollbar for webkit browsers */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    @apply bg-glass-stroke rounded-full;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-glass-stroke/60;
-  }
+}
+
+/* Global Background - Fixed Gradient */
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-mid) 50%, var(--bg-light) 100%);
+  background-attachment: fixed;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Remove all previous gradient backgrounds from components */
+* {
+  background-image: none !important;
+}
+
+/* Glass Panel Base */
+.glass-panel {
+  background: var(--glass-white-5);
+  backdrop-filter: blur(var(--blur-lg)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur-lg)) saturate(180%);
+  border: 1px solid var(--glass-white-15);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Glass Button Base */
+.glass-button {
+  background: transparent;
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
+  border: 1px solid var(--glass-white-15);
+  color: var(--text-primary);
+  transition: all 0.2s ease-out;
+}
+
+.glass-button:hover {
+  background: var(--glass-white-10);
+  border-color: var(--glass-white-20);
+}
+
+.glass-button:active {
+  background: var(--glass-white-15);
+}
+
+/* Glass Chip */
+.glass-chip {
+  background: var(--glass-white-8);
+  backdrop-filter: blur(var(--blur-sm));
+  -webkit-backdrop-filter: blur(var(--blur-sm));
+  border: 1px solid var(--glass-white-15);
+  border-radius: var(--radius-md);
+}
+
+/* Remove all color utilities - everything is white glass */
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-tertiary { color: var(--text-tertiary); }
+.text-disabled { color: var(--text-disabled); }
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--glass-white-5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--glass-white-20);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--glass-white-30);
 }

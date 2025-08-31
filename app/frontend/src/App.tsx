@@ -1,19 +1,14 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimer } from './hooks/useTimer';
 import { usePrimeWindows } from './hooks/usePrimeWindows';
 import { useSessionManager } from './hooks/useSessionManager';
-import { soundManager } from './utils/soundManager';
 import { SplashScreen } from './components/SplashScreen';
-import { Dashboard } from './components/Dashboard';
 import { TimerDisplay } from './components/TimerDisplay';
 import { RadialTimeline } from './components/RadialTimeline';
 import { LapChip } from './components/LapChip';
 import { LapList } from './components/LapList';
-import { HistoryView } from './components/HistoryView';
-import { SettingsView } from './components/SettingsView';
-import { ProductsView } from './components/ProductsView';
-import { AnimatedLogo } from './components/AnimatedLogo';
+import { Logo } from './components/Logo';
 import { Lap, LapType } from './types/timer';
 import './App.css';
 
@@ -24,43 +19,27 @@ const lapTypes: { type: LapType; label: string }[] = [
   { type: 'no-effect', label: 'No Effect' }
 ];
 
-type AppView = 'splash' | 'dashboard' | 'timer' | 'history' | 'settings' | 'products';
+type AppView = 'splash' | 'timer' | 'history' | 'preset';
 
 function App() {
   const [currentView, setCurrentView] = useState<AppView>('splash');
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showPreset, setShowPreset] = useState(false);
   
   const { elapsed, state, start, pause, resume, stop, reset } = useTimer();
   const [laps, setLaps] = useState<Lap[]>([]);
-  const [showRadial, setShowRadial] = useState(true);  const [config, setConfig] = useState({
-    enablePrimeHints: true,
-    soundEnabled: true,
-    vibrationEnabled: false
-  });
-  
-  // Set sound manager state
-  useEffect(() => {
-    soundManager.setEnabled(config.soundEnabled);
-  }, [config.soundEnabled]);
   
   const startTimeRef = useRef<number>(0);
   const { saveSession } = useSessionManager();
-  const primeWindows = usePrimeWindows(elapsed, 20);
-  
-  // Handle navigation
+  const primeWindows = usePrimeWindows(elapsed, 20);  
+  // Handle splash complete
   const handleSplashComplete = useCallback(() => {
-    setCurrentView('dashboard');
-  }, []);
-  
-  const handleStartSession = useCallback(() => {
     setCurrentView('timer');
     start();
     startTimeRef.current = Date.now();
-    setLaps([]);
-    setShowRadial(true);
-    soundManager.play('start');
   }, [start]);
   
+  // Handle lap
   const handleLap = useCallback((type: LapType) => {
     if (state !== 'running') return;
     
@@ -72,16 +51,14 @@ function App() {
     };
     
     setLaps(prev => [...prev, newLap]);
-    soundManager.play('tap');
-    
-    if (config.vibrationEnabled && 'vibrate' in navigator) {
-      navigator.vibrate(50);
-    }
-  }, [state, elapsed, config.vibrationEnabled]);  
+  }, [state, elapsed]);
+  
+  // Handle undo
   const handleUndo = useCallback((lapId: string) => {
     setLaps(prev => prev.filter(lap => lap.id !== lapId));
   }, []);
   
+  // Handle end session
   const handleEnd = useCallback(async () => {
     stop();
     const endTime = Date.now();
@@ -91,143 +68,85 @@ function App() {
       endTime,
       elapsed,
       laps,
-      selectedProduct?.manufacturer
+      'Session'
     );
     
-    soundManager.play('end');
-    setShowRadial(false);
-    setCurrentView('dashboard');
-  }, [stop, elapsed, laps, selectedProduct, saveSession]);
+    // Reset for new session
+    reset();
+    setLaps([]);
+    startTimeRef.current = Date.now();
+    start();
+  }, [stop, reset, start, elapsed, laps, saveSession]);
   
-  const handleBackToDashboard = useCallback(() => {
-    if (state === 'running' || state === 'paused') {
-      if (confirm('End current session?')) {
-        handleEnd();
-      }
-    } else {
-      reset();
-      setCurrentView('dashboard');
+  // Handle control actions
+  const handleControl = useCallback(() => {
+    if (state === 'idle') {
+      start();
+      startTimeRef.current = Date.now();
+    } else if (state === 'running') {
+      pause();
+    } else if (state === 'paused') {
+      resume();
     }
-  }, [state, handleEnd, reset]);
+  }, [state, start, pause, resume]);
   
-  // Find next prime window
-  const nextPrime = primeWindows.find(w => w.median > elapsed);
+  // Check for prime windows
   const activePrime = primeWindows.find(w => w.isActive);  
-  // Render based on current view
+  // Render splash screen
   if (currentView === 'splash') {
     return <SplashScreen onComplete={handleSplashComplete} />;
   }
   
-  if (currentView === 'dashboard') {
-    return (
-      <>
-        <Dashboard
-          onStartSession={handleStartSession}
-          onViewHistory={() => setCurrentView('history')}
-          onManageProducts={() => setCurrentView('products')}
-          onSettings={() => setCurrentView('settings')}
-        />
-        
-        <AnimatePresence>
-          {currentView === 'history' && (
-            <HistoryView 
-              onClose={() => setCurrentView('dashboard')} 
-              onSelectSession={(session) => {
-                console.log('Selected session:', session);
-                setCurrentView('dashboard');
-              }}
-            />
-          )}
-          
-          {currentView === 'settings' && (
-            <SettingsView
-              onClose={() => setCurrentView('dashboard')}
-              config={config}
-              onConfigChange={setConfig}
-            />
-          )}
-          
-          {currentView === 'products' && (
-            <ProductsView
-              onClose={() => setCurrentView('dashboard')}
-              onSelectProduct={(product) => {
-                setSelectedProduct(product);
-                setCurrentView('dashboard');
-              }}
-            />
-          )}
-        </AnimatePresence>
-      </>
-    );
-  }  
-  // Timer View
+  // Main timer view
   return (
-    <div className="min-h-screen bg-gradient-to-b from-bg-start to-bg-end">
-      {/* Header with Logo */}
-      <header className="flex justify-between items-center px-6 py-4">
-        <button 
-          onClick={handleBackToDashboard}
-          className="text-text-secondary hover:text-text-primary transition-colors"
-        >
-          ← Back
-        </button>
-        
-        <AnimatedLogo size={40} animate={false} />
-        
-        <button 
-          onClick={() => setShowRadial(!showRadial)}
-          className={`text-2xl transition-colors ${showRadial ? 'text-radial-glow' : 'text-text-secondary/40'}`}
-        >
-          ◉
-        </button>
-      </header>
-
-      {/* Product Badge */}
-      {selectedProduct && (
-        <div className="px-6 mb-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-glass-tint/40 backdrop-blur-chip rounded-full border border-glass-stroke/30">
-            <span className="text-xs text-text-secondary">Using:</span>
-            <span className="text-xs text-text-primary font-medium">
-              {selectedProduct.manufacturer} {selectedProduct.strain}
-            </span>
-          </div>
+    <div className="min-h-screen flex items-center justify-center p-6">
+      {/* Main Glass Panel Container */}
+      <motion.div 
+        className="glass-panel w-full max-w-md mx-auto p-8"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <button
+            onClick={() => setShowPreset(true)}
+            className="text-white/70 hover:text-white transition-colors text-body"
+          >
+            Preset
+          </button>
+          
+          <Logo size={32} className="opacity-70" />
+          
+          <button
+            onClick={() => setShowHistory(true)}
+            className="text-white/70 hover:text-white transition-colors text-body"
+          >
+            History
+          </button>
         </div>
-      )}      {/* Main Timer Content */}
-      <main className="px-6 py-4 max-w-md mx-auto">
+        
         {/* Timer Display */}
-        <div className="mb-6">
+        <div className="mb-8">
           <TimerDisplay elapsed={elapsed} />
         </div>
         
         {/* Radial Timeline */}
-        <AnimatePresence>
-          {showRadial && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="mb-6"
-            >
-              <RadialTimeline 
-                elapsed={elapsed}
-                laps={laps}
-                nextPrime={nextPrime ? {
-                  type: nextPrime.type,
-                  timeRemaining: nextPrime.median - elapsed,
-                  median: nextPrime.median
-                } : undefined}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="mb-8">
+          <RadialTimeline 
+            elapsed={elapsed}
+            laps={laps}
+            maxTime={300000}
+          />
+        </div>
         
         {/* Lap Chips */}
         {state === 'running' && (
-          <div className="mb-6">
-            <div className="flex flex-wrap gap-2 justify-center mb-3">
+          <div className="mb-8">
+            <div className="grid grid-cols-2 gap-3">
               {lapTypes.map(({ type, label }) => {
                 const window = primeWindows.find(w => w.type === type);
-                const isPrimed = config.enablePrimeHints && window?.isActive;
+                const isPrimed = window?.isActive;
                 
                 return (
                   <LapChip
@@ -236,115 +155,110 @@ function App() {
                     label={label}
                     onTap={() => handleLap(type)}
                     isHighlighted={isPrimed}
-                    isPrimed={isPrimed}
                   />
                 );
               })}
-            </div>            
-            {config.enablePrimeHints && activePrime && (
-              <p className="text-text-secondary/60 text-sm text-center">
-                Prime suggestion based on your averages
-              </p>
-            )}
+            </div>
           </div>
         )}
         
         {/* Lap List */}
         {laps.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-8 max-h-48 overflow-y-auto">
             <LapList laps={laps} onUndo={handleUndo} />
           </div>
         )}
         
         {/* Control Buttons */}
-        <div className="fixed bottom-8 left-0 right-0 px-6">
-          <AnimatePresence mode="wait">
-            {state === 'running' && (
-              <motion.div
-                key="running"
-                className="flex gap-3"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-              >
-                <button
-                  onClick={pause}
-                  className="flex-1 py-4 bg-glass-tint backdrop-blur-panel rounded-glass-xl text-text-primary font-medium border border-glass-stroke"
-                >
-                  Pause
-                </button>
-                <button
-                  onClick={handleEnd}
-                  className="flex-1 py-4 bg-accent-alert/20 backdrop-blur-panel rounded-glass-xl text-accent-alert font-medium border border-accent-alert/30"
-                >
-                  End Session
-                </button>
-              </motion.div>
-            )}            
-            {state === 'paused' && (
-              <motion.button
-                key="resume"
-                onClick={resume}
-                className="w-full py-4 bg-accent-success rounded-glass-xl text-text-primary font-medium shadow-glass"
-                whileTap={{ scale: 0.98 }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-              >
-                Resume
-              </motion.button>
-            )}
-            
-            {state === 'completed' && (
-              <motion.button
-                key="return"
-                onClick={() => setCurrentView('dashboard')}
-                className="w-full py-4 bg-accent-primary rounded-glass-xl text-text-primary font-medium shadow-glass"
-                whileTap={{ scale: 0.98 }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-              >
-                Return to Dashboard
-              </motion.button>
-            )}
-          </AnimatePresence>
+        <div className="flex gap-3">
+          <motion.button
+            onClick={handleControl}
+            className="flex-1 py-3 glass-button rounded-glass-lg text-white"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            {state === 'idle' ? 'Start' : state === 'running' ? 'Pause' : 'Resume'}
+          </motion.button>
+          
+          {state !== 'idle' && (
+            <motion.button
+              onClick={handleEnd}
+              className="py-3 px-6 glass-button rounded-glass-lg text-white/70"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              End
+            </motion.button>
+          )}
         </div>
         
-        {/* Footer disclaimer */}
-        <div className="text-center text-text-secondary/40 text-xs mt-12 mb-24">
-          Not medical advice
+        {/* Footer */}
+        <div className="text-center mt-8">
+          <p className="text-white/30 text-tiny">Not medical advice</p>
         </div>
-      </main>
+      </motion.div>
       
-      {/* Overlays for Timer View */}
+      {/* History Modal */}
       <AnimatePresence>
-        {currentView === 'history' && (
-          <HistoryView 
-            onClose={() => setCurrentView('timer')} 
-            onSelectSession={(session) => {
-              console.log('Selected session:', session);
-              setCurrentView('timer');
-            }}
-          />
+        {showHistory && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-xl flex items-center justify-center p-6 z-50"
+            onClick={() => setShowHistory(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="glass-panel w-full max-w-md p-6"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-title text-white">History</h2>
+                <button
+                  onClick={() => setShowHistory(false)}
+                  className="text-white/50 hover:text-white text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+              <p className="text-white/50">Session history will appear here</p>
+            </motion.div>
+          </motion.div>
         )}
-        
-        {currentView === 'settings' && (
-          <SettingsView
-            onClose={() => setCurrentView('timer')}
-            config={config}
-            onConfigChange={setConfig}
-          />
-        )}
-        
-        {currentView === 'products' && (
-          <ProductsView
-            onClose={() => setCurrentView('timer')}
-            onSelectProduct={(product) => {
-              setSelectedProduct(product);
-              setCurrentView('timer');
-            }}
-          />
+      </AnimatePresence>
+      
+      {/* Preset Modal */}
+      <AnimatePresence>
+        {showPreset && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-xl flex items-center justify-center p-6 z-50"
+            onClick={() => setShowPreset(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="glass-panel w-full max-w-md p-6"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-title text-white">Preset</h2>
+                <button
+                  onClick={() => setShowPreset(false)}
+                  className="text-white/50 hover:text-white text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+              <p className="text-white/50">Product presets will appear here</p>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

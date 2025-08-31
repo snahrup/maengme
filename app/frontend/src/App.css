@@ -1,28 +1,27 @@
-/* App-specific styles that don't belong in Tailwind */
-.radial-gradient {
-  background: radial-gradient(circle at center, var(--tw-gradient-from), var(--tw-gradient-to));
+/* App specific styles - most styling is in index.css and Tailwind */
+
+/* Ensure root takes full height */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-.timer-glow {
-  box-shadow: 0 0 20px rgba(74, 155, 127, 0.5);
+/* Custom scrollbar for lap list */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
 }
 
-@keyframes radialPulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.8;
-  }
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
 }
 
-@keyframes timerTick {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }

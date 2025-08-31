@@ -7,52 +7,97 @@ export default {
   theme: {
     extend: {
       colors: {
-        // From tokens.json - Liquid Glass palette
-        'bg-start': '#0B1220',
-        'bg-end': '#0E1A2F',
-        'glass-tint': 'rgba(15, 30, 54, 0.67)',
-        'glass-stroke': 'rgba(255, 255, 255, 0.2)',
-        'text-primary': '#F5F7FB',
-        'text-secondary': '#C9D2E3',
-        'accent-primary': '#1DA1FF',
-        'accent-primary2': '#007AFF',
-        'accent-success': '#34C759',
-        'accent-alert': '#FF3B30',
-        'chip-neutral': '#C8D0E0',
-        'chip-tail': '#A8C6FF',
-        'radial-glow': '#00D4FF',
-      },
-      fontFamily: {
-        sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Inter', 'system-ui', 'sans-serif'],
-        mono: ['SF Mono', 'Monaco', 'Inconsolata', 'monospace']
+        // Pure Glass System - No colors, only white with opacity
+        glass: {
+          5: 'rgba(255, 255, 255, 0.05)',
+          8: 'rgba(255, 255, 255, 0.08)',
+          10: 'rgba(255, 255, 255, 0.10)',
+          15: 'rgba(255, 255, 255, 0.15)',
+          20: 'rgba(255, 255, 255, 0.20)',
+          25: 'rgba(255, 255, 255, 0.25)',
+          30: 'rgba(255, 255, 255, 0.30)',
+        },
+        // Text hierarchy
+        white: {
+          DEFAULT: 'rgba(255, 255, 255, 1)',
+          70: 'rgba(255, 255, 255, 0.7)',
+          50: 'rgba(255, 255, 255, 0.5)',
+          30: 'rgba(255, 255, 255, 0.3)',
+        }
       },
       backdropBlur: {
-        'panel': '18px',
-        'chip': '12px'
+        xs: '5px',
+        sm: '10px',
+        md: '20px',
+        lg: '40px',
+        xl: '60px',
       },
       borderRadius: {
-        'glass': '22px',
-        'glass-xl': '28px'
+        'glass-sm': '12px',
+        'glass': '16px',
+        'glass-lg': '24px',
+        'glass-xl': '32px',
       },
-      boxShadow: {
-        'glass': '0 10px 30px rgba(0, 0, 0, 0.35)',
-        'glow': '0 0 40px rgba(29, 161, 255, 0.4)'
+      fontFamily: {
+        'display': ['-apple-system', 'SF Pro Display', 'system-ui'],
+        'sans': ['-apple-system', 'SF Pro Text', 'system-ui'],
+      },
+      fontSize: {
+        // Vision Pro Typography Scale
+        'timer-lg': ['72px', { lineHeight: '1', fontWeight: '200' }],
+        'timer': ['48px', { lineHeight: '1', fontWeight: '200' }],
+        'display': ['32px', { lineHeight: '1.2', fontWeight: '300' }],
+        'title': ['24px', { lineHeight: '1.3', fontWeight: '300' }],
+        'body': ['16px', { lineHeight: '1.5', fontWeight: '400' }],
+        'small': ['14px', { lineHeight: '1.4', fontWeight: '400' }],
+        'tiny': ['12px', { lineHeight: '1.3', fontWeight: '400' }],
       },
       animation: {
-        'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'number-tick': 'numberTick 100ms ease-out'
+        'glow-pulse': 'glow-pulse 3s ease-in-out infinite',
+        'clock-sweep': 'clock-sweep 2s ease-in-out',
+        'fade-in': 'fade-in 0.5s ease-out',
+        'slide-up': 'slide-up 0.3s ease-out',
       },
       keyframes: {
-        pulseGlow: {
-          '0%, 100%': { opacity: 0.4 },
-          '50%': { opacity: 1 }
+        'glow-pulse': {
+          '0%, 100%': { 
+            filter: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.3))',
+          },
+          '50%': { 
+            filter: 'drop-shadow(0 0 40px rgba(255, 255, 255, 0.5))',
+          },
         },
-        numberTick: {
-          '0%': { transform: 'scale(1)' },
-          '50%': { transform: 'scale(1.02)' },
-          '100%': { transform: 'scale(1)' }
-        }
-      }
+        'clock-sweep': {
+          '0%': { 
+            transform: 'rotate(-90deg)',
+            opacity: '0',
+          },
+          '10%': {
+            opacity: '1',
+          },
+          '90%': {
+            opacity: '1',
+          },
+          '100%': { 
+            transform: 'rotate(270deg)',
+            opacity: '0',
+          },
+        },
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        'slide-up': {
+          '0%': { 
+            transform: 'translateY(10px)',
+            opacity: '0',
+          },
+          '100%': { 
+            transform: 'translateY(0)',
+            opacity: '1',
+          },
+        },
+      },
     },
   },
   plugins: [],
