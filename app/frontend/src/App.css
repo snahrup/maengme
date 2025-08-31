@@ -1,6 +1,6 @@
 /* App specific styles */
 
-/* Ensure html and body take full height with gradient */
+/* Ensure html and body take full height with image background */
 html {
   height: 100%;
 }
@@ -9,9 +9,7 @@ body {
   min-height: 100%;
   margin: 0;
   padding: 0;
-  background: linear-gradient(135deg, #0A2A20 0%, #0F3A2A 50%, #134E3C 100%);
-  background-attachment: fixed;
-  background-size: cover;
+  /* Background image is set in index.css */
 }
 
 #root {

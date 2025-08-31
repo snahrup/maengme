@@ -36,7 +36,7 @@
   }
 }
 
-/* Global Background - Use actual image if available, fallback to gradient */
+/* Global Background - Use actual image */
 html, body, #root {
   margin: 0;
   padding: 0;
@@ -45,24 +45,19 @@ html, body, #root {
 }
 
 body {
-  /* Try to use background image first, fallback to gradient */
-  background-image: url('/background.jpg');
+  /* Use the actual background image */
+  background-image: url('/background.png');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
   background-repeat: no-repeat;
   
-  /* Fallback gradient if image doesn't load */
+  /* Fallback color if image doesn't load */
   background-color: #0A2A20;
   
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-/* If image fails to load, use gradient */
-body:not([style*="background-image"]) {
-  background: linear-gradient(135deg, #0A2A20 0%, #0F3A2A 50%, #134E3C 100%);
 }
 
 #root {

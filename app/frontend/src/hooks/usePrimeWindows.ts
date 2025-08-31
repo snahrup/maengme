@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../store/database';
-import { Session, LapType, PrimeWindow } from '../types/timer';
+import { LapType, PrimeWindow } from '../types/timer';
 
 interface PrimeStats {
   onset: number[];

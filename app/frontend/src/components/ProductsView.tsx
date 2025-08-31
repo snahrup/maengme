@@ -15,7 +15,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ onClose, onSelectPro
     product.ingestion.toLowerCase() === selectedCategory
   );
   
-  const manufacturers = [...new Set(productsData.map(p => p.manufacturer))];
+  // const manufacturers = [...new Set(productsData.map(p => p.manufacturer))];
   
   return (
     <motion.div

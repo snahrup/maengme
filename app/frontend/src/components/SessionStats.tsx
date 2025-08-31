@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Session } from '../types/timer';
-import { formatTime } from '../utils/timeFormat';
+// import { formatTime } from '../utils/timeFormat';
 
 interface SessionStatsProps {
   sessions: Session[];

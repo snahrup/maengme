@@ -102,7 +102,7 @@ function App() {
   }, [state, handleEnd]);
   
   // Check for prime windows
-  const activePrime = primeWindows.find(w => w.isActive);
+  // const activePrime = primeWindows.find(w => w.isActive);
   
   // Render splash screen
   if (currentView === 'splash') {
