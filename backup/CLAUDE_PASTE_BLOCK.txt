@@ -1,0 +1,153 @@
+=== OPENING PROMPT (paste this into Claude) ===
+
+Act as the **BMAD Team** (Orchestrator + roles). Use the attached files:
+- `01_generic_bundle/*` (BMAD team bundle + protocol)
+- `02_project_prd_spec/*` (PRD, SPEC, API, DATA, TOKENS, TASKS)
+Goal: Generate a **full repo** for the Medication Stopwatch app.
+
+## Deliverables
+1) **Backend** (FastAPI):
+   - `/api/health`, `/api/export`, `/api/import` and **stubs** for product lookup.
+   - Pydantic models reflecting `DATA_MODEL.md`.
+   - CORS enabled, OpenAPI docs.
+2) **Frontend** (React + Vite + TS + Tailwind + Dexie + Day.js + Framer Motion):
+   - Components listed in SPEC.md, Liquid Glass tokens from `DESIGN_TOKENS.json`.
+   - IndexedDB persistence; service worker; installable PWA.
+   - Screens: Main Timer, History, Lap Details Drawer, Dose Start Modal, Preset Modal (mock data).
+   - Timer format: `m:ss:ms` → after 60m switch to `h:mm:ss`.
+3) **Testing & Tooling**:
+   - ESLint/Prettier; Vitest + RTL; Pytest.
+   - `README.md` with setup steps & commands.
+4) **A11y & Safety**:
+   - Keyboard focus order, ARIA labels.
+   - Footer disclaimer: "Informational only. Not medical advice."
+
+## Repo Structure (requested)
+/app
+  /frontend  (Vite React TS Tailwind)
+  /backend   (FastAPI)
+  /shared    (types/docs if needed)
+
+Ship iteratively, referencing acceptance criteria in `SPEC.md`. Produce commands to run dev servers and build artifacts.
+
+
+=== PRD.md ===
+
+# PRD — Medication Stopwatch (Liquid Glass)
+
+## Problem
+Users need a **simple, reliable stopwatch** to track medication sessions (e.g., kratom), capturing dose start, **lap-based milestones** (Initial Onset → Peak → Tail → No Effect), and **notes** for what was experienced.
+
+## Goals (v1)
+- Start a dose with **medication preset** (brand/strain optional) and **capsules count**.
+- Primary timer supports **m:ss:ms**; switches to **h:mm:ss** after 60 minutes.
+- **Lap categories**: Initial Onset, Peak, Tail, No Effect (+Custom).
+- **Notes** per lap; edit anytime. Session ends at No Effect or manual End.
+- **History** view of past sessions with summary stats.
+- **Local-first** (no account required). Share/export JSON/CSV.
+- **Liquid Glass** visual system (Apple-style).
+
+## Future (v2)
+- Product search API: given brand/strain/sku, fetch **image + effects + use cases** and display a **Preset Modal** (Overview, Effects, Interactions, Vendor tabs).
+
+## Future (v3)
+- AI assistant for: personal trends, safe-use guidance, interactions, suggestions.
+- **Consent-gated** enhanced profile (conditions, other meds). Strong disclaimers.
+
+## Non-Goals
+- Medical advice. The app provides **informational logs** only.
+- Cloud sync in v1 (can be added later).
+
+## Personas
+- **Self-tracker** wants to understand timing & intensity.
+- **Vendor/Practitioner** may request exported history.
+
+## Success Metrics
+- Time to first successful session < 30s.
+- 80%+ sessions record at least one milestone.
+- A11y: WCAG AA colors; VoiceOver friendly.
+
+
+=== SPEC.md ===
+
+# Build Spec — Medication Stopwatch
+
+## Stack
+- **Frontend:** React 18 + Vite + TypeScript + Tailwind, Framer Motion, Dexie (IndexedDB), Day.js.
+- **Backend:** FastAPI (future), pydantic models; in v1 backend not required; include stubs.
+- **PWA:** manifest, service worker, add-to-home, offline support.
+
+## Core Components
+- `GlassPanel`, `GlassChip`, `GlassButton`, `Icon`.
+- `TimerHero` — large time display, format switch rule at 60m.
+- `ControlsBar` — Start/Pause/Resume, Lap, End.
+- `LapChips` — categorical lap quick-select.
+- `LapList` — list of laps with elapsed & timestamp; swipe actions.
+- `LapDetailsDrawer` — label, intensity 1–5, tags, notes.
+- `DoseStartModal` — preset select, capsules stepper, optional strength/notes.
+- `PresetModal` (v2) — product image, brand/strain, effects, tabs: Overview, Effects, Interactions, Vendor.
+- `HistoryView` — sessions list; detail page.
+- `SettingsView` — milestone sets, privacy lock, export/import.
+
+## State Machine
+- `idle → running → paused → completed`
+- Events: `START(session)`, `LAP(label)`, `PAUSE`, `RESUME`, `END`, `EDIT_LAP`, `DELETE_LAP`.
+- Timer: high-res `performance.now()`; tick via `requestAnimationFrame`.
+
+## Data Model (TS)
+type UUID = string;
+export type MilestoneLabel = "Initial Onset"|"Peak"|"Tail"|"No Effect"|string;
+export interface DoseSession { id: UUID; medicationName?: string; capsulesTaken: number; strengthMgPerCap?: number; startTime: string; endTime?: string; notes?: string; }
+export interface LapEvent { id: UUID; sessionId: UUID; label: MilestoneLabel; timestamp: string; elapsedMs: number; intensity?: number; tags?: string[]; notes?: string; }
+export interface Settings { defaultMilestones: MilestoneLabel[]; customMilestones: MilestoneLabel[]; hapticsEnabled: boolean; privacyLock: boolean; }
+
+## IndexedDB (Dexie)
+- Tables: `sessions` (by `startTime`), `laps` (by `sessionId+timestamp`), `settings` (singleton).
+
+## Accessibility
+- Large hit targets; logical focus; ARIA labels; prefers-reduced-motion fallbacks.
+
+## Acceptance Criteria
+- Timer shows **m:ss:ms**; after 60m, **h:mm:ss**.
+- Lap capture ≤ 1 tap from main screen; labeled chips visible.
+- Lap edit: add notes and intensity; saved persistently.
+- History shows session stats (time to onset/peak, tail length).
+- Installable PWA; offline works for core flows.
+- "Not medical advice" disclaimer present.
+
+
+=== API_CONTRACTS.md ===
+
+# API Contracts (v2/v3 Ready)
+
+## v2 — Product Lookup (stub in v1)
+GET /api/products/search?q=<string> → { items: [{ id, brand, name, strain, form, strengthPerCapMg, imageUrl }] }
+GET /api/products/{id} → { id, brand, name, strain, effects: string[], useCases: string[], interactions?: string[], imageUrl }
+
+## v3 — AI Assistant
+Requires consent + profile:
+GET /api/profile / PUT /api/profile
+POST /api/ai/query → { answer, cites?: string[] }
+Guardrails: never prescribe; provide ranges & public references; encourage clinician consult.
+
+
+=== DATA_MODEL.md ===
+
+# Data Model Notes
+
+- Sessions/laps: time fields immutable; **notes** editable.
+- Calculations: onset = first 'Initial Onset' − start; peak = first 'Peak' − start; tail = 'No Effect' − 'Peak'.
+- Export: JSON (all tables) + CSV (summary + per-lap).
+
+
+=== UX_COPY.md ===
+
+# UX Copy
+
+Header: Preset • History
+Controls: Start • Pause • Resume • Lap • End
+Lap chips: Initial Onset • Peak • Tail • No Effect • + Custom
+Drawer: Intensity • Tags • Notes
+Preset Modal tabs: Overview • Effects • Interactions • Vendor
+Footer: Informational only. Not medical advice.
+

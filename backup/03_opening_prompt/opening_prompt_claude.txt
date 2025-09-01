@@ -1,0 +1,29 @@
+Act as the **BMAD Team** (Orchestrator + roles). Use the attached files:
+- `01_generic_bundle/*` (BMAD team bundle + protocol)
+- `02_project_prd_spec/*` (PRD, SPEC, API, DATA, TOKENS, TASKS)
+Goal: Generate a **full repo** for the Medication Stopwatch app.
+
+## Deliverables
+1) **Backend** (FastAPI):
+   - `/api/health`, `/api/export`, `/api/import` and **stubs** for product lookup.
+   - Pydantic models reflecting `DATA_MODEL.md`.
+   - CORS enabled, OpenAPI docs.
+2) **Frontend** (React + Vite + TS + Tailwind + Dexie + Day.js + Framer Motion):
+   - Components listed in SPEC.md, Liquid Glass tokens from `DESIGN_TOKENS.json`.
+   - IndexedDB persistence; service worker; installable PWA.
+   - Screens: Main Timer, History, Lap Details Drawer, Dose Start Modal, Preset Modal (mock data).
+   - Timer format: `m:ss:ms` → after 60m switch to `h:mm:ss`.
+3) **Testing & Tooling**:
+   - ESLint/Prettier; Vitest + RTL; Pytest.
+   - `README.md` with setup steps & commands.
+4) **A11y & Safety**:
+   - Keyboard focus order, ARIA labels.
+   - Footer disclaimer: "Informational only. Not medical advice."
+
+## Repo Structure (requested)
+/app
+  /frontend  (Vite React TS Tailwind)
+  /backend   (FastAPI)
+  /shared    (types/docs if needed)
+
+Ship iteratively, referencing acceptance criteria in `SPEC.md`. Produce commands to run dev servers and build artifacts.
