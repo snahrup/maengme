@@ -1,8 +1,9 @@
 import { useState, useCallback, useRef } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { Toaster } from 'react-hot-toast';
 import { db } from './store/database';
-import { useTimer } from './hooks/useTimer';
+import { useEpochTimer } from './hooks/useEpochTimer';
 import { usePrimeWindows } from './hooks/usePrimeWindows';
 import { useSessionManager } from './hooks/useSessionManager';
 import { SplashScreen } from './components/SplashScreen';
@@ -23,7 +24,7 @@ function App() {
   const [activePreset, setActivePreset] = useState<ProductPreset | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   
-  const { elapsed, state, start, pause, resume, stop, reset } = useTimer();
+  const { elapsed, state, start, pause, resume, stop, reset } = useEpochTimer();
   const [laps, setLaps] = useState<Lap[]>([]);  
   const startTimeRef = useRef<number>(0);
   const { saveSession } = useSessionManager();
@@ -222,6 +223,9 @@ function App() {
             <HistoryView onClose={() => setShowHistory(false)} />
           )}
         </AnimatePresence>
+        
+        {/* Toast Notifications */}
+        <Toaster position="top-center" />
       </div>
     </div>
   );

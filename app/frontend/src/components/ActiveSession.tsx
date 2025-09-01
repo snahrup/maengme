@@ -22,7 +22,7 @@ import {
   X
 } from 'lucide-react';
 import { BellCurve } from './BellCurve';
-import { TimerDisplay } from './TimerDisplay';
+import { InteractiveTimer } from './InteractiveTimer';
 import { LapChip } from './LapChip';
 import { LapList } from './LapList';
 import { EffectTracker } from './EffectTracker';
@@ -33,6 +33,7 @@ import { SessionInsights } from './SessionInsights';
 import { ProductPreset } from '../types/product';
 import { Lap, LapType } from '../types/timer';
 import { sessionAnalytics } from '../services/sessionAnalytics';
+import { toast } from 'react-hot-toast';
 
 interface ActiveSessionProps {
   preset: ProductPreset;
@@ -366,16 +367,57 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
           </AnimatePresence>
         </div>
 
-        {/* Timer Display */}
+        {/* Interactive Timer with Phase Ring */}
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="mb-8"
         >
-          <TimerDisplay 
-            elapsed={elapsed} 
-            size="lg"
-            showMillis={state === 'running'}
+          <InteractiveTimer
+            elapsed={elapsed}
+            state={state === 'stopped' || state === 'idle' ? 'stopped' : state === 'completed' ? 'paused' : state}
+            onStart={onStart}
+            onPause={onPause}
+            onResume={onResume}
+            onStop={onEnd}
+            onLogIntensity={(intensity) => {
+              // Log intensity as a lap
+              const intensityMap: { [key: number]: LapType } = {
+                1: 'no-effect', 2: 'no-effect', 3: 'onset',
+                4: 'onset', 5: 'onset', 6: 'peak',
+                7: 'peak', 8: 'peak', 9: 'tail', 10: 'tail'
+              };
+              const lapType = intensityMap[intensity] || 'custom';
+              onLap(lapType, `Intensity: ${intensity}/10`);
+              
+              // Show toast feedback
+              toast(`Logged intensity: ${intensity}/10`, {
+                duration: 2000,
+                position: 'top-center',
+                style: {
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  color: '#fff',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                },
+                icon: '✨',
+              });
+              
+              // Update effect history
+              setEffectHistory(prev => [...prev, { time: elapsed, strength: intensity }]);
+            }}
+            onLogDetail={() => {
+              setShowEffectTracker(true);
+            }}
+            phaseInfo={{
+              current: currentPhase,
+              progress: phaseProgress / 100,
+              times: {
+                onset: preset?.product?.timing?.onset ? preset.product.timing.onset * 60000 : 600000,
+                peak: preset?.product?.timing?.peak ? preset.product.timing.peak * 60000 : 2700000,
+                tail: preset?.product?.timing?.duration ? preset.product.timing.duration * 60000 : 5400000
+              }
+            }}
           />
         </motion.div>
 
