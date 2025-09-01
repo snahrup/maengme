@@ -281,7 +281,7 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
 
         {/* Visualization Area */}
         <div className="relative h-64 mb-8">
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             {(showVisualization === 'alkaloid' || showVisualization === 'both') && (
               <motion.div
                 key="alkaloid"

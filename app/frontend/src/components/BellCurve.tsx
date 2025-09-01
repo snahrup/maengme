@@ -20,10 +20,10 @@ export const BellCurve: React.FC<BellCurveProps> = ({
   const maxTime = expectedTail * 1.2; // Add some buffer
   const currentPosition = (elapsed / maxTime) * 100;
   
-  // Find actual lap times
-  const actualOnset = laps.find(l => l.type === 'onset')?.elapsed;
-  const actualPeak = laps.find(l => l.type === 'peak')?.elapsed;
-  const actualTail = laps.find(l => l.type === 'tail')?.elapsed;
+  // Find actual lap times (safely handle undefined/empty laps)
+  const actualOnset = laps?.find(l => l.type === 'onset')?.elapsed;
+  const actualPeak = laps?.find(l => l.type === 'peak')?.elapsed;
+  const actualTail = laps?.find(l => l.type === 'tail')?.elapsed;
   
   // Calculate positions as percentages
   const onsetPos = (expectedOnset / maxTime) * 100;
