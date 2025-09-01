@@ -10,11 +10,17 @@ export interface Product {
   // Alkaloid profile (if known)
   mitragynine?: number; // percentage
   hydroxymitragynine?: number; // percentage
+  alkaloids?: Record<string, number>; // For other alkaloids
   
   // Timing expectations (in minutes)
   expectedOnset?: number;
   expectedPeak?: number;
   expectedDuration?: number;
+  timing?: {
+    onset: number;
+    peak: number;
+    duration: number;
+  };
   
   // User-specific data
   commonDoses?: {
@@ -31,6 +37,7 @@ export interface Product {
 
 export interface ProductPreset {
   id: string;
+  name?: string;
   productId: string;
   product?: Product;
   dose: number;
@@ -40,6 +47,9 @@ export interface ProductPreset {
   lastUsed?: Date;
   useCount?: number;
   averageRating?: number;
+  expectedOnset?: number;
+  expectedPeak?: number;
+  expectedDuration?: number;
 }
 
 export interface Session {

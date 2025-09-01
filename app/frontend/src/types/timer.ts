@@ -1,7 +1,7 @@
 // Core timer types
 export type TimerState = 'idle' | 'running' | 'paused' | 'completed';
 
-export type LapType = 'onset' | 'peak' | 'tail' | 'no-effect' | 'custom';
+export type LapType = 'onset' | 'peak' | 'tail' | 'no-effect' | 'custom' | 'hydration' | 'note';
 
 export interface Lap {
   id: string;

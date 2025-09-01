@@ -84,4 +84,25 @@ export const ActiveSessionEnhanced: React.FC<ActiveSessionProps> = ({
     } else if (minutes < expectedPeak * 0.8) {
       setCurrentPhase('onset');
       setPredictedNextPhase(`Peak approaching in ${Math.ceil(expectedPeak - minutes)} min`);
-    } else if (minutes < expecte
+    } else if (minutes < expectedPeak * 1.2) {
+      setCurrentPhase('peak');
+      setPredictedNextPhase(`Peak phase - log your experience`);
+    } else if (minutes < expectedDuration) {
+      setCurrentPhase('tail');
+      setPredictedNextPhase(`Session winding down`);
+    } else {
+      setCurrentPhase('after');
+      setPredictedNextPhase(`Session complete`);
+    }
+  }, [elapsed, preset]);
+
+  return (
+    <div className="min-h-screen bg-[#0B1220] relative overflow-hidden">
+      {/* Implementation would continue here */}
+      <div className="text-white p-6">
+        <h1>Active Session Enhanced - Placeholder</h1>
+        <p>This component needs full implementation</p>
+      </div>
+    </div>
+  );
+};

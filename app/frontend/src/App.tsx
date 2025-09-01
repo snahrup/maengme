@@ -153,7 +153,7 @@ function App() {
               onSelectProduct={handleSelectProduct}
               onStartSession={handleQuickStart}
               onViewHistory={() => setShowHistory(true)}
-              onViewPresets={() => setShowPreset(true)}
+              onViewPresets={() => console.log('Presets view not implemented')}
               sessionsCount={sessions.length}
               lastSessionDate={lastSession ? new Date(lastSession.endTime).toLocaleDateString() : undefined}
             />
@@ -181,14 +181,14 @@ function App() {
               key="session"
               preset={activePreset}
               elapsed={elapsed}
-              state={state}
+              state={state === 'idle' || state === 'completed' ? 'stopped' : state}
               laps={laps}
               onStart={start}
               onPause={pause}
               onResume={resume}
               onEnd={handleEnd}
               onLap={handleLap}
-              onUndo={handleUndo}
+              onUndo={() => handleUndo(laps[laps.length - 1]?.id)}
               onHome={handleBackToHome}
             />
           )}          
@@ -204,14 +204,14 @@ function App() {
                 method: 'toss-wash'
               }}
               elapsed={elapsed}
-              state={state}
+              state={state === 'idle' || state === 'completed' ? 'stopped' : state}
               laps={laps}
               onStart={start}
               onPause={pause}
               onResume={resume}
               onEnd={handleEnd}
               onLap={handleLap}
-              onUndo={handleUndo}
+              onUndo={() => handleUndo(laps[laps.length - 1]?.id)}
               onHome={handleBackToHome}
             />
           )}

@@ -111,7 +111,7 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
 
   const handleEffectLog = (strength: number, notes?: string) => {
     setEffectHistory(prev => [...prev, { time: elapsed, strength }]);
-    sessionAnalytics.logEffect(strength, notes);
+    sessionAnalytics.logEffect(strength, [], notes);
     setShowEffectTracker(false);
     
     // Show encouraging feedback
@@ -375,7 +375,7 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
         >
           <InteractiveTimer
             elapsed={elapsed}
-            state={state === 'stopped' || state === 'idle' ? 'stopped' : state === 'completed' ? 'paused' : state}
+            state={state as any}
             onStart={onStart}
             onPause={onPause}
             onResume={onResume}
