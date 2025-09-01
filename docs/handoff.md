@@ -2,144 +2,90 @@
 
 ## Latest Status ✅
 - **Branch:** master  
-- **Last commit:** 7d197c3 - Final build: Background image, bell curve, home screen, proper navigation
+- **Last commit:** 2f42dec - Add complete kratom product database with all 9 products
 - **GitHub:** https://github.com/snahrup/maengme
-- **Dev Server:** http://localhost:5177/
-- **Production Preview:** http://localhost:4173/
-- **Build:** ✅ Successful (373KB JS, 19KB CSS)
+- **Dev Server:** http://localhost:5180/ (currently running)
+- **Build:** ✅ Working
 
-## Complete Vision Pro UI Implementation
-
-### Major Features Completed
-1. **Authentic Vision Pro Glass Design**
-   - Pure translucent white components (5-15% opacity)
-   - Deep green gradient background (now using actual image)
-   - All visual interest from transparency and blur effects
-   - SF Pro typography with ultra-light weights
-
-2. **Navigation Flow**
-   - Splash Screen → Home Screen → Timer
-   - No auto-start - user must click "Start New Session"
-   - Proper back navigation
-   - Modal overlays for History/Presets
-
-3. **Bell Curve Visualization**
-   - Replaced radial timeline with bell curve
-   - Shows expected onset/peak/tail timing
-   - Visual markers for logged laps
-   - Progress indicator follows curve
-   - Adapts to session data (ready for ML integration)
-
-4. **Home Screen Hub**
-   - Welcome with logo animation
-   - Session statistics
-   - Clear action buttons
-   - Glass panel design
-
-5. **Background Integration**
-   - Uses actual background.png image
-   - Properly sized and positioned
-   - Fallback to gradient if image fails
-
-### Technical Achievements
-- **Performance:** 60fps animations, GPU accelerated
-- **Build Size:** 373KB JS (gzipped: 121KB)
-- **PWA Ready:** Service worker, manifest, offline support
-- **TypeScript:** Strict mode, zero errors
-- **Responsive:** Works on all screen sizes
-
-### File Structure
-```
-app/frontend/
-├── public/
-│   ├── background.png (NEW - actual background)
-│   └── products/
-├── src/
-│   ├── components/
-│   │   ├── BellCurve.tsx (NEW)
-│   │   ├── HomeScreen.tsx (NEW)
-│   │   ├── Logo.tsx
-│   │   ├── SplashScreen.tsx
-│   │   └── [12 other components]
-│   ├── App.tsx (completely rebuilt)
-│   └── index.css (pure glass system)
-└── dist/ (production build)
-```
-
-## Production Ready
-The app is now production-ready with:
-- Clean, professional UI matching Vision Pro aesthetic
-- Smooth user experience flow
-- Robust data persistence
-- Offline capabilities
-- Optimized performance
-
-## Deployment Next Steps
-1. Deploy to Vercel/Netlify (connect GitHub repo)
-2. Set up custom domain
-3. Add analytics (Plausible/Fathom)
-4. Enable PWA install prompts
-5. Test on real devices
-
-## Future Enhancements
-- Machine learning for personalized bell curves
-- Cloud sync with user accounts
-- Social features (share sessions)
-- Advanced analytics dashboard
-- More product data integration
-
-The app is complete and ready for production deployment! 🚀
-
-## Session Update - Product Selection & Enhanced Active Session
+## Session Update - December 20, 2024
 
 ### What Changed
-1. **Product Selection Flow**
-   - Created `ProductSelector.tsx` - searchable product catalog with filters
-   - Created `ProductDetails.tsx` - detailed product view with dose configuration
-   - Created `productsDatabase.ts` - enhanced product data with alkaloid profiles
-   - Created `types/product.ts` - comprehensive type definitions
+1. **Complete Product Database Implementation**
+   - Added all 9 kratom products with full details
+   - OPMS Silver Line: Red Sumatra, Green Borneo, White Indo, Green Thai, Green Malay
+   - Mit Therapy Regular: Mixed Maeng Da Extract, Red Bali & White Elephant Extract
+   - Mit Therapy Onyx: White Banda & Red Maluku, Super Sumatra & White Mukomuko
+   - Each product includes: alkaloid profiles, timing data, dosage guidelines, effects, warnings
+   - Proper image paths linking to existing product images in `/products/`
 
-2. **Enhanced Active Session**
-   - Created `ActiveSession.tsx` - engaging session screen with:
-     - Real-time phase tracking (pre-onset, onset, peak, tail)
-     - Live molecular metabolism visualization
-     - Predictive lap suggestions
-     - Phase progress indicators
-     - Alkaloid absorption metrics
-   - Removed redundant "Session Curve" label from BellCurve
+2. **Data Collection Mechanism (Step 1 of 3 - IN PROGRESS)**
+   - Created `sessionAnalytics.ts` service for collecting real timing data
+   - Added analytics types in `sessionAnalytics.ts`
+   - Updated database schema with analytics tables (version 2)
+   - Created `EffectTracker.tsx` component for user effect logging
+   - Partially integrated analytics into `ActiveSession.tsx`
+   - Analytics tracks: session start/end, laps, effect strength, phase changes
 
-3. **Updated Navigation Flow**
-   - Home → Product Selection → Product Details → Active Session
-   - Quick start option for last used product
-   - Auto-save product configurations as presets
-
-4. **UI Enhancements**
-   - Added engaging animations and visual feedback
-   - Molecular activity visualization during sessions
-   - Smart phase-based lap suggestions with visual cues
-   - Real-time metabolism rate calculations
+### Current State
+- **App running:** Port 5180
+- **Last action:** Working on integrating effect tracking into ActiveSession
+- **Status:** ActiveSession component partially updated, needs completion
 
 ### Open Items
-- Implement preset database storage
-- Add quick-start with last product functionality
-- Integrate ML for personalized bell curves
-- Add haptic-like visual feedback for phase transitions
-- Implement achievement system
+- Complete ActiveSession.tsx integration (file was partially written)
+- Implement ML-based timing predictions (Step 2)
+- Add user-adjustable timing profiles (Step 3)
+- Test the complete analytics flow
+- Add data visualization for collected metrics
 
 ### Next Actions
-1. Test the complete flow end-to-end
-2. Add preset persistence to Dexie database
-3. Implement product image loading
-4. Add more products to the database
-5. Create onboarding flow for first-time users
+1. **IMMEDIATE:** Complete ActiveSession.tsx component with effect tracking UI
+2. Create ML prediction service using collected data
+3. Add timing adjustment UI for users to calibrate
+4. Create analytics dashboard to view collected data
+5. Test complete flow: session → data collection → ML prediction → adjusted timings
 
-### Assumptions
-- Product timing defaults: onset 10min, peak 45min, duration 120min
-- Dose units: grams for powder, capsules for capsules
-- Alkaloid percentages are estimates for visualization
+### Assumptions Made
+- Effect strength on 1-10 scale
+- Phase detection based on elapsed time initially
+- Analytics auto-saves to IndexedDB
+- Session IDs generated from timestamp
 
 ### Files Touched
-- Created: ProductSelector.tsx, ProductDetails.tsx, ActiveSession.tsx
-- Created: types/product.ts, data/productsDatabase.ts
-- Modified: App.tsx, HomeScreen.tsx, BellCurve.tsx, index.css
-- Modified: docs/handoff.md
+- **Created:** 
+  - `src/types/sessionAnalytics.ts` - Analytics type definitions
+  - `src/services/sessionAnalytics.ts` - Analytics service
+  - `src/components/EffectTracker.tsx` - Effect logging UI
+- **Modified:**
+  - `src/data/productsDatabase.ts` - Complete product data
+  - `src/store/database.ts` - Added analytics tables
+  - `src/components/ActiveSession.tsx` - Partial integration (INCOMPLETE)
+
+### Critical Notes
+- **ActiveSession.tsx is incomplete** - was in middle of adding UI when context limit approached
+- Analytics service is ready but not fully integrated
+- Database migration to v2 will happen automatically on next app load
+- Effect tracker component complete and ready to use
+
+### Timing Data Context
+User asked about timing estimates - confirmed they are:
+- **NOT based on actual product data**
+- Currently using generalized kratom pharmacokinetics
+- Extracts: faster onset/shorter duration
+- Regular leaf: slower onset/longer duration
+- This is WHY we're building the analytics system - to collect REAL data
+
+### Implementation Status
+**Step 1: Data Collection** - 70% complete
+- ✅ Analytics types defined
+- ✅ Database schema updated
+- ✅ Analytics service created
+- ✅ Effect tracker UI built
+- ⚠️ ActiveSession integration incomplete
+- ❌ Testing needed
+
+**Step 2: ML Predictions** - 0% complete
+**Step 3: User Adjustments** - 0% complete
+
+### For Next Session
+Priority: Complete ActiveSession.tsx integration, then move to ML predictions. The foundation is solid but needs the UI connection finished.
