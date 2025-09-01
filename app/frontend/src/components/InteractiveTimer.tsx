@@ -39,7 +39,7 @@ export const InteractiveTimer: React.FC<InteractiveTimerProps> = ({
   const [intensity, setIntensity] = useState(5);
   const [isDragging, setIsDragging] = useState(false);
   const timerRef = useRef<HTMLDivElement>(null);
-  const longPressTimer = useRef<NodeJS.Timeout>();
+  const longPressTimer = useRef<ReturnType<typeof setTimeout>>();
   const tapStartTime = useRef<number>(0);
   
   // Format time display
