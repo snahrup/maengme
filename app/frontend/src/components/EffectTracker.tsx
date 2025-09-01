@@ -1,15 +1,29 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, TrendingUp, Brain, Activity, Zap, X } from 'lucide-react';
-import { sessionAnalytics } from '../services/sessionAnalytics';
+import { 
+  Sparkles, 
+  TrendingUp, 
+  Brain, 
+  Activity, 
+  Zap, 
+  X,
+  Info,
+  Smile,
+  Frown,
+  Meh
+} from 'lucide-react';
 
 interface EffectTrackerProps {
-  isOpen: boolean;
+  onLog: (strength: number, notes?: string) => void;
   onClose: () => void;
-  productId: string;
+  currentPhase: 'pre-onset' | 'onset' | 'peak' | 'tail' | 'after';
 }
 
-export const EffectTracker: React.FC<EffectTrackerProps> = ({ isOpen, onClose, productId }) => {
+export const EffectTracker: React.FC<EffectTrackerProps> = ({ 
+  onLog, 
+  onClose,
+  currentPhase 
+}) => {
   const [strength, setStrength] = useState(5);
   const [selectedEffects, setSelectedEffects] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
@@ -22,8 +36,46 @@ export const EffectTracker: React.FC<EffectTrackerProps> = ({ isOpen, onClose, p
     { icon: Zap, label: 'Pain Relief', color: 'text-red-400' }
   ];
 
+  const strengthLabels = [
+    { value: 0, label: 'Nothing', icon: Meh },
+    { value: 3, label: 'Mild', icon: Smile },
+    { value: 5, label: 'Moderate', icon: Smile },
+    { value: 7, label: 'Strong', icon: Smile },
+    { value: 10, label: 'Intense', icon: Sparkles }
+  ];
+
+  const getStrengthLabel = () => {
+    if (strength === 0) return 'Nothing Yet';
+    if (strength <= 3) return 'Mild Effects';
+    if (strength <= 5) return 'Moderate Effects';
+    if (strength <= 7) return 'Strong Effects';
+    return 'Intense Effects';
+  };
+
+  const getPhaseHint = () => {
+    switch(currentPhase) {
+      case 'pre-onset':
+        return "It's normal to not feel much yet - effects typically begin soon";
+      case 'onset':
+        return "You might start feeling the first effects now";
+      case 'peak':
+        return "This is typically when effects are strongest";
+      case 'tail':
+        return "Effects usually start tapering during this phase";
+      case 'after':
+        return "Most effects should be minimal by now";
+      default:
+        return "";
+    }
+  };
+
   const handleSubmit = () => {
-    sessionAnalytics.logEffect(strength, selectedEffects, notes);
+    // Combine selected effects into notes
+    const effectNotes = selectedEffects.length > 0 
+      ? `Effects: ${selectedEffects.join(', ')}. ${notes}`.trim()
+      : notes;
+    
+    onLog(strength, effectNotes);
     
     // Reset form
     setStrength(5);
@@ -31,6 +83,7 @@ export const EffectTracker: React.FC<EffectTrackerProps> = ({ isOpen, onClose, p
     setNotes('');
     onClose();
   };
+
   const toggleEffect = (effect: string) => {
     setSelectedEffects(prev =>
       prev.includes(effect)
@@ -40,101 +93,176 @@ export const EffectTracker: React.FC<EffectTrackerProps> = ({ isOpen, onClose, p
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          onClick={onClose}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className="w-full max-w-md p-6 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10"
-            onClick={e => e.stopPropagation()}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
+        className="w-full max-w-md bg-gradient-to-b from-gray-900/95 to-black/95 backdrop-blur-xl rounded-3xl border border-white/10 p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-semibold text-white">How are you feeling?</h2>
+            <p className="text-sm text-white/60 mt-1">{getPhaseHint()}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full hover:bg-white/10 transition-colors"
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-light text-white">Log Effects</h2>
-              <button
-                onClick={onClose}
-                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
-              >
-                <X className="w-4 h-4 text-white/60" />
-              </button>
-            </div>
+            <X className="w-5 h-5 text-white/60" />
+          </button>
+        </div>
 
-            {/* Strength Slider */}
-            <div className="mb-6">
-              <label className="block text-sm text-white/60 mb-2">
-                Effect Strength: {strength}/10
-              </label>
-              <input
-                type="range"
-                min="1"
-                max="10"
-                value={strength}
-                onChange={e => setStrength(parseInt(e.target.value))}
-                className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
-                style={{
-                  background: `linear-gradient(to right, rgba(34, 197, 94, 0.5) 0%, rgba(34, 197, 94, 0.5) ${strength * 10}%, rgba(255, 255, 255, 0.1) ${strength * 10}%, rgba(255, 255, 255, 0.1) 100%)`
-                }}
+        {/* Strength Slider */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <label className="text-white/80 text-sm font-medium">Effect Strength</label>
+            <span className="text-[#1DA1FF] font-medium">{getStrengthLabel()}</span>
+          </div>
+          
+          {/* Visual strength indicator */}
+          <div className="flex items-center gap-2 mb-4">
+            {[...Array(10)].map((_, i) => (
+              <div
+                key={i}
+                className={`h-8 flex-1 rounded-full transition-all cursor-pointer ${
+                  i < strength 
+                    ? 'bg-gradient-to-r from-[#1DA1FF] to-[#007AFF]' 
+                    : 'bg-white/10'
+                }`}
+                onClick={() => setStrength(i + 1)}
               />
-              <div className="flex justify-between text-xs text-white/40 mt-1">
-                <span>Threshold</span>
-                <span>Moderate</span>
-                <span>Strong</span>
-              </div>
-            </div>
-
-            {/* Effect Selection */}
-            <div className="mb-6">
-              <label className="block text-sm text-white/60 mb-3">Select Effects</label>
-              <div className="grid grid-cols-2 gap-2">
-                {effectOptions.map(({ icon: Icon, label, color }) => (
-                  <button
-                    key={label}
-                    onClick={() => toggleEffect(label)}
-                    className={`
-                      flex items-center gap-2 px-3 py-2 rounded-xl transition-all
-                      ${selectedEffects.includes(label)
-                        ? 'bg-white/10 border-white/20'
-                        : 'bg-white/5 border-white/10 hover:bg-white/10'
-                      } border
-                    `}
-                  >
-                    <Icon className={`w-4 h-4 ${color}`} />
-                    <span className="text-sm text-white/80">{label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Notes */}
-            <div className="mb-6">
-              <label className="block text-sm text-white/60 mb-2">Notes (optional)</label>
-              <textarea
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                placeholder="Any additional observations..."
-                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white/80 placeholder-white/30 focus:outline-none focus:border-white/20 resize-none"
-                rows={3}
-              />
-            </div>
-
-            {/* Submit Button */}
+            ))}
+          </div>
+          
+          <input
+            type="range"
+            min="0"
+            max="10"
+            value={strength}
+            onChange={(e) => setStrength(Number(e.target.value))}
+            className="w-full h-2 bg-white/10 rounded-full appearance-none cursor-pointer slider"
+            style={{
+              background: `linear-gradient(to right, #1DA1FF 0%, #007AFF ${strength * 10}%, rgba(255,255,255,0.1) ${strength * 10}%)`
+            }}
+          />
+          
+          {/* Quick presets */}
+          <div className="flex gap-2 mt-3">
             <button
-              onClick={handleSubmit}
-              disabled={selectedEffects.length === 0}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-white font-medium hover:from-green-500/30 hover:to-emerald-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => setStrength(0)}
+              className={`px-3 py-1 rounded-full text-xs transition-all ${
+                strength === 0 
+                  ? 'bg-[#1DA1FF]/20 text-[#1DA1FF] border border-[#1DA1FF]/30' 
+                  : 'bg-white/5 text-white/60 hover:bg-white/10'
+              }`}
             >
-              Log Effects
+              Nothing
             </button>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            <button
+              onClick={() => setStrength(3)}
+              className={`px-3 py-1 rounded-full text-xs transition-all ${
+                strength === 3 
+                  ? 'bg-[#1DA1FF]/20 text-[#1DA1FF] border border-[#1DA1FF]/30' 
+                  : 'bg-white/5 text-white/60 hover:bg-white/10'
+              }`}
+            >
+              Mild
+            </button>
+            <button
+              onClick={() => setStrength(5)}
+              className={`px-3 py-1 rounded-full text-xs transition-all ${
+                strength === 5 
+                  ? 'bg-[#1DA1FF]/20 text-[#1DA1FF] border border-[#1DA1FF]/30' 
+                  : 'bg-white/5 text-white/60 hover:bg-white/10'
+              }`}
+            >
+              Moderate
+            </button>
+            <button
+              onClick={() => setStrength(8)}
+              className={`px-3 py-1 rounded-full text-xs transition-all ${
+                strength === 8 
+                  ? 'bg-[#1DA1FF]/20 text-[#1DA1FF] border border-[#1DA1FF]/30' 
+                  : 'bg-white/5 text-white/60 hover:bg-white/10'
+              }`}
+            >
+              Strong
+            </button>
+          </div>
+        </div>
+
+        {/* Effect Types */}
+        <div className="mb-6">
+          <label className="text-white/80 text-sm font-medium mb-3 block">
+            What effects are you experiencing?
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            {effectOptions.map(({ icon: Icon, label, color }) => (
+              <button
+                key={label}
+                onClick={() => toggleEffect(label)}
+                className={`p-3 rounded-xl border transition-all flex items-center gap-2 ${
+                  selectedEffects.includes(label)
+                    ? 'bg-white/10 border-[#1DA1FF]/50 shadow-lg'
+                    : 'bg-white/5 border-white/10 hover:bg-white/10'
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${color}`} />
+                <span className="text-white/80 text-sm">{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Notes */}
+        <div className="mb-6">
+          <label className="text-white/80 text-sm font-medium mb-2 block">
+            Additional Notes (Optional)
+          </label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Any other observations..."
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#1DA1FF]/50 transition-colors resize-none"
+            rows={3}
+          />
+        </div>
+
+        {/* Helper text */}
+        <div className="flex items-start gap-2 mb-6 p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
+          <Info className="w-4 h-4 text-blue-400 mt-0.5" />
+          <p className="text-xs text-blue-300/80">
+            Logging effects helps track your personal patterns and optimize future sessions
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 rounded-full bg-white/5 border border-white/10 text-white/60 font-medium hover:bg-white/10 transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="flex-1 py-3 rounded-full bg-gradient-to-r from-[#1DA1FF] to-[#007AFF] text-white font-medium hover:opacity-90 transition-opacity"
+          >
+            Log Effect
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 };

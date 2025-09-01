@@ -16,7 +16,10 @@ import {
   Droplet,
   Target,
   MessageCircle,
-  Eye
+  Eye,
+  Info,
+  HelpCircle,
+  X
 } from 'lucide-react';
 import { BellCurve } from './BellCurve';
 import { TimerDisplay } from './TimerDisplay';
@@ -66,6 +69,8 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
   const [currentInsight, setCurrentInsight] = useState<string>('');
   const [effectHistory, setEffectHistory] = useState<Array<{ time: number; strength: number }>>([]);
   const [showVisualization, setShowVisualization] = useState<'alkaloid' | 'wave' | 'both'>('both');
+  const [showHelp, setShowHelp] = useState(false);
+  const [firstTimeUser, setFirstTimeUser] = useState(true);
 
   // Start analytics session when timer starts
   useEffect(() => {
@@ -75,8 +80,17 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
         preset.dose,
         preset.product.ingestion === 'capsule' ? 'capsules' : 'grams'
       );
+      
+      // Show first-time help
+      if (firstTimeUser) {
+        setTimeout(() => {
+          setCurrentInsight('Tap "Log Effect" to track how you\'re feeling at any time');
+          setShowInsight(true);
+          setFirstTimeUser(false);
+        }, 3000);
+      }
     }
-  }, [state, elapsed, preset]);
+  }, [state, elapsed, preset, firstTimeUser]);
 
   // End analytics session when timer stops
   useEffect(() => {
@@ -97,6 +111,13 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
     setEffectHistory(prev => [...prev, { time: elapsed, strength }]);
     sessionAnalytics.logEffect(strength, notes);
     setShowEffectTracker(false);
+    
+    // Show encouraging feedback
+    setCurrentInsight(strength === 0 
+      ? 'Thanks for logging! It\'s normal not to feel effects yet'
+      : `Effect logged: ${strength}/10. Your pattern is building!`
+    );
+    setShowInsight(true);
   };
   
   // Calculate current phase and progress
@@ -166,11 +187,11 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
       ],
       'onset': [
         `Approaching peak in ${Math.ceil(nextPhaseTime || 0)} minutes`,
-        'Mitragynine is binding to your opioid receptors',
+        'Alkaloids are binding to your receptors',
         'This is when most users feel the first effects'
       ],
       'peak': [
-        'You\'re experiencing peak alkaloid saturation',
+        'You\'re experiencing peak alkaloid activity',
         `This intensity typically lasts ${Math.ceil(nextPhaseTime || 0)} more minutes`,
         'Your receptors are maximally engaged'
       ],
@@ -204,11 +225,11 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
 
   const getPhaseLabel = () => {
     const labels = {
-      'pre-onset': 'Absorption',
-      'onset': 'Rising',
-      'peak': 'Peak',
-      'tail': 'Tapering',
-      'after': 'Afterglow'
+      'pre-onset': 'Waiting for Effects',
+      'onset': 'Effects Starting',
+      'peak': 'Peak Effects',
+      'tail': 'Winding Down',
+      'after': 'Session Complete'
     };
     return labels[currentPhase];
   };
@@ -241,17 +262,26 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
         <button
           onClick={onHome}
           className="p-3 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-colors"
+          aria-label="Go Home"
         >
           <Home className="w-5 h-5 text-white/80" />
         </button>
 
         <div className="flex gap-2">
           <button
+            onClick={() => setShowHelp(true)}
+            className="p-3 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-colors"
+            aria-label="Help"
+          >
+            <HelpCircle className="w-5 h-5 text-white/80" />
+          </button>
+          <button
             onClick={() => setShowVisualization(prev => 
               prev === 'alkaloid' ? 'wave' : 
               prev === 'wave' ? 'both' : 'alkaloid'
             )}
             className="p-3 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-colors"
+            aria-label="Toggle Visualization"
           >
             <Eye className="w-5 h-5 text-white/80" />
           </button>
@@ -279,8 +309,17 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
           </div>
         </motion.div>
 
-        {/* Visualization Area */}
+        {/* Visualization Area with Labels */}
         <div className="relative h-64 mb-8">
+          {/* Visualization Label */}
+          <div className="absolute top-2 left-2 z-10 bg-black/50 backdrop-blur-xl rounded-lg px-3 py-1.5 border border-white/10">
+            <p className="text-xs text-white/60">
+              {showVisualization === 'alkaloid' && 'Alkaloid Activity'}
+              {showVisualization === 'wave' && 'Your Effect Pattern'}
+              {showVisualization === 'both' && 'Activity & Effects'}
+            </p>
+          </div>
+          
           <AnimatePresence>
             {(showVisualization === 'alkaloid' || showVisualization === 'both') && (
               <motion.div
@@ -330,7 +369,7 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
           />
         </motion.div>
 
-        {/* Phase Progress Bar */}
+        {/* Phase Progress Bar with Better Labels */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -339,7 +378,7 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
           <div className="flex items-center justify-between mb-2 text-sm text-white/60">
             <span>{getPhaseLabel()}</span>
             {nextPhaseTime && (
-              <span>Next: {formatNextPhase(nextPhaseTime)}</span>
+              <span>Next phase in: {formatNextPhase(nextPhaseTime)}</span>
             )}
           </div>
           <div className="h-2 bg-white/10 rounded-full overflow-hidden backdrop-blur-xl">
@@ -363,57 +402,81 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
           )}
         </AnimatePresence>
 
-        {/* Quick Actions */}
+        {/* Quick Actions with Clearer Labels */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex gap-3 mb-8"
+          className="mb-8"
         >
-          <button
-            onClick={() => setShowEffectTracker(true)}
-            className="flex-1 py-3 px-4 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-all flex items-center justify-center gap-2"
-          >
-            <Brain className="w-4 h-4 text-[#1DA1FF]" />
-            <span className="text-white/80 text-sm">Log Effect</span>
-          </button>
-          
-          <button
-            onClick={() => handleLap('hydration')}
-            className="flex-1 py-3 px-4 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-all flex items-center justify-center gap-2"
-          >
-            <Droplet className="w-4 h-4 text-blue-400" />
-            <span className="text-white/80 text-sm">Hydrate</span>
-          </button>
-          
-          <button
-            onClick={() => handleLap('note')}
-            className="flex-1 py-3 px-4 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-all flex items-center justify-center gap-2"
-          >
-            <MessageCircle className="w-4 h-4 text-purple-400" />
-            <span className="text-white/80 text-sm">Note</span>
-          </button>
+          <p className="text-xs text-white/40 text-center mb-3">Quick Actions</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowEffectTracker(true)}
+              className="flex-1 py-3 px-4 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-all flex flex-col items-center gap-1 relative"
+              aria-label="Log how you're feeling"
+            >
+              <Brain className="w-5 h-5 text-[#1DA1FF]" />
+              <span className="text-white/80 text-xs">Log Effect</span>
+              <span className="text-white/40 text-[10px]">How you feel</span>
+              {effectHistory.length === 0 && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#1DA1FF] rounded-full animate-pulse" />
+              )}
+            </button>
+            
+            <button
+              onClick={() => {
+                handleLap('hydration', 'Stayed hydrated');
+                setCurrentInsight('Great job staying hydrated! 💧');
+                setShowInsight(true);
+              }}
+              className="flex-1 py-3 px-4 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-all flex flex-col items-center gap-1"
+              aria-label="Log water intake"
+            >
+              <Droplet className="w-5 h-5 text-blue-400" />
+              <span className="text-white/80 text-xs">Hydrate</span>
+              <span className="text-white/40 text-[10px]">Log water</span>
+            </button>
+            
+            <button
+              onClick={() => {
+                const note = prompt('Add a note about this session:');
+                if (note) {
+                  handleLap('note', note);
+                  setCurrentInsight('Note added to your session');
+                  setShowInsight(true);
+                }
+              }}
+              className="flex-1 py-3 px-4 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-all flex flex-col items-center gap-1"
+              aria-label="Add a note"
+            >
+              <MessageCircle className="w-5 h-5 text-purple-400" />
+              <span className="text-white/80 text-xs">Note</span>
+              <span className="text-white/40 text-[10px]">Add thought</span>
+            </button>
+          </div>
         </motion.div>
 
-        {/* Bell Curve */}
+        {/* Bell Curve with Label */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
           className="mb-8"
         >
+          <p className="text-xs text-white/40 text-center mb-3">Expected Timeline</p>
           <BellCurve
             preset={preset}
             currentTime={elapsed}
-            markers={laps.map(lap => ({ 
+            markers={laps?.map(lap => ({ 
               time: lap.elapsed, 
               type: lap.type || 'onset',
               label: lap.notes
-            }))}
+            })) || []}
           />
         </motion.div>
 
         {/* Lap List */}
-        {laps.length > 0 && (
+        {laps && laps.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -451,6 +514,7 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
               <button
                 onClick={onEnd}
                 className="py-4 px-6 rounded-full bg-red-500/20 backdrop-blur-xl border border-red-500/30 hover:bg-red-500/30 transition-colors"
+                aria-label="End Session"
               >
                 <Square className="w-5 h-5 text-red-400" />
               </button>
@@ -467,6 +531,7 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
               <button
                 onClick={onEnd}
                 className="py-4 px-6 rounded-full bg-red-500/20 backdrop-blur-xl border border-red-500/30 hover:bg-red-500/30 transition-colors"
+                aria-label="End Session"
               >
                 <Square className="w-5 h-5 text-red-400" />
               </button>
@@ -483,6 +548,86 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
             onClose={() => setShowEffectTracker(false)}
             currentPhase={currentPhase}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Help Modal */}
+      <AnimatePresence>
+        {showHelp && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowHelp(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="w-full max-w-md bg-gradient-to-b from-gray-900/95 to-black/95 backdrop-blur-xl rounded-3xl border border-white/10 p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-white">Session Guide</h2>
+                <button
+                  onClick={() => setShowHelp(false)}
+                  className="p-2 rounded-full hover:bg-white/10 transition-colors"
+                >
+                  <X className="w-5 h-5 text-white/60" />
+                </button>
+              </div>
+              
+              <div className="space-y-4 text-sm">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-blue-500/20">
+                    <Brain className="w-4 h-4 text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">Log Effects</p>
+                    <p className="text-white/60 text-xs">Track how you're feeling on a scale of 0-10</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-purple-500/20">
+                    <Eye className="w-4 h-4 text-purple-400" />
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">Visualizations</p>
+                    <p className="text-white/60 text-xs">Particles show alkaloid activity, waves show your effects</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-green-500/20">
+                    <TrendingUp className="w-4 h-4 text-green-400" />
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">Session Phases</p>
+                    <p className="text-white/60 text-xs">Waiting → Starting → Peak → Winding Down</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-yellow-500/20">
+                    <Sparkles className="w-4 h-4 text-yellow-400" />
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">Smart Insights</p>
+                    <p className="text-white/60 text-xs">Get helpful tips based on your session phase</p>
+                  </div>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => setShowHelp(false)}
+                className="w-full mt-6 py-3 rounded-full bg-gradient-to-r from-[#1DA1FF] to-[#007AFF] text-white font-medium"
+              >
+                Got it!
+              </button>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
