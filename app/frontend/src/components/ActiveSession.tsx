@@ -26,7 +26,8 @@ import { TimerDisplay } from './TimerDisplay';
 import { LapChip } from './LapChip';
 import { LapList } from './LapList';
 import { EffectTracker } from './EffectTracker';
-import { AlkaloidVisualizer } from './AlkaloidVisualizer';
+import { MolecularAnimation } from './MolecularAnimation';
+import { ParticleField } from './ParticleField';
 import { EffectWave } from './EffectWave';
 import { SessionInsights } from './SessionInsights';
 import { ProductPreset } from '../types/product';
@@ -247,10 +248,19 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0E1A2F] relative overflow-hidden">
+      {/* Enhanced Particle Field Background */}
+      <ParticleField 
+        intensity={1.2}
+        interactive={true}
+        colorScheme={currentPhase === 'peak' ? 'aurora' : 'mixed'}
+        depth={true}
+      />
+      
       {/* Ambient Background Effects */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-20 left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-40 right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-20 left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-40 right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-full blur-3xl animate-pulse delay-500" />
       </div>
 
       {/* Navigation Bar */}
@@ -329,7 +339,7 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
                 exit={{ opacity: 0 }}
                 className={showVisualization === 'both' ? 'absolute inset-0' : ''}
               >
-                <AlkaloidVisualizer
+                <MolecularAnimation
                   phase={currentPhase}
                   metabolismRate={metabolismRate}
                   alkaloids={preset.product?.alkaloids || {}}
@@ -465,13 +475,11 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
         >
           <p className="text-xs text-white/40 text-center mb-3">Expected Timeline</p>
           <BellCurve
-            preset={preset}
-            currentTime={elapsed}
-            markers={laps?.map(lap => ({ 
-              time: lap.elapsed, 
-              type: lap.type || 'onset',
-              label: lap.notes
-            })) || []}
+            elapsed={elapsed}
+            laps={laps || []}
+            expectedOnset={preset?.product?.timing?.onset ? preset.product.timing.onset * 60000 : 600000}
+            expectedPeak={preset?.product?.timing?.peak ? preset.product.timing.peak * 60000 : 2700000}
+            expectedTail={preset?.product?.timing?.duration ? preset.product.timing.duration * 60000 : 5400000}
           />
         </motion.div>
 

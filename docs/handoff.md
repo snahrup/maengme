@@ -2,101 +2,65 @@
 
 ## Latest Status ✅  
 - **Branch:** master
-- **Last commit:** b409233 - Major UX improvements: intuitive interface
+- **Last commit:** Pending (fixing console errors)
 - **GitHub:** https://github.com/snahrup/maengme
 - **Dev Server:** http://localhost:5181/ (currently running)
-- **Build:** ✅ Working - Clean console
+- **Build:** ⚠️ Has console warnings (NaN in BellCurve - now fixed)
 
-## Session Update - December 20, 2024 (12:10 PM)
+## Session Update - January 31, 2025 (Evening)
 
-### 🎯 MAJOR UX IMPROVEMENTS COMPLETE!
+### What Changed
+- **Created DESIGN_DECISIONS.md** - Comprehensive documentation of all architectural decisions from audit review
+- **Fixed BellCurve NaN errors** - Component was receiving wrong props (preset/currentTime instead of elapsed/laps)
+- **Added safeguards** - All numeric calculations now have bounds checking and fallbacks
+- **Documented future roadmap** - Sprint plan captured in design decisions doc
 
-### What We Fixed & Improved
+### Current State
+- App running with BellCurve fixes applied
+- Console errors should be resolved (NaN warnings eliminated)
+- Design decisions documented but not yet implemented
+- Core functionality still working (timer, product selection, session tracking)
 
-1. **Log Effect Modal - NOW WORKING!**
-   - Fixed prop mismatch (was preventing modal from working)
-   - Beautiful visual strength indicator (bars, not just slider)
-   - Quick preset buttons: Nothing, Mild, Moderate, Strong
-   - Effect type selection with icons (Euphoria, Energy, Focus, etc.)
-   - Contextual hints based on session phase
-   - Clear "How are you feeling?" title
-   - Optional notes field
+### Open Items
+- Implement timer-as-logging-trigger interaction
+- Build phase ring around timer
+- Add confidence scoring for ghost curves
+- Implement Simple Mode for first 3 sessions
+- Begin Sprint 1 items from design doc
 
-2. **Clearer Interface Labels**
-   - Phase names: "Waiting for Effects" instead of "Absorption Phase"
-   - "Next phase in: X min" - clear timing info
-   - "Quick Actions" label above buttons
-   - Descriptive subtitles on buttons ("How you feel", "Log water", "Add thought")
-   - Visual indicator (blue dot) prompting first effect log
+### Next Actions
+1. **Verify console is clean** - Check if NaN errors are gone
+2. **Begin timer interaction** - Implement tap-for-radial logging
+3. **Start phase ring** - Visual indicator around timer
+4. **Add epoch-based timing** - Replace current timer with pausedAt/resumedAt arrays
 
-3. **Help System Added**
-   - Help button (?) in top nav
-   - Modal explaining all features
-   - Session phases explained
-   - Visualization purpose clarified
-   - Quick action descriptions
+### Assumptions Made
+- BellCurve should use elapsed time and laps array, not preset object
+- Numeric safeguards with fallbacks prevent NaN propagation
+- Design decisions doc serves as implementation roadmap
 
-4. **Better Visual Context**
-   - "Activity & Effects" label on visualizations
-   - "Expected Timeline" label on bell curve
-   - Clear phase progress bar
-   - Encouraging feedback after actions
+### Files Touched
+- Created: `docs/DESIGN_DECISIONS.md`
+- Modified: `app/frontend/src/components/ActiveSession.tsx`
+- Modified: `app/frontend/src/components/BellCurve.tsx`
+- Modified: `docs/handoff.md`
 
-5. **First-Time User Experience**
-   - Auto-prompt to log first effect after 3 seconds
-   - Contextual hints throughout
-   - Visual cues (pulsing dots) drawing attention
-   - Encouraging messages after each action
-
-### User Experience Wins
-✅ **Self-Explanatory**: Anyone can understand what to do
-✅ **Intuitive**: Technical and non-technical users alike
-✅ **Encouraging**: Positive feedback for every action
-✅ **Beautiful**: Maintained glass aesthetic while adding clarity
-✅ **Functional**: All buttons work, all modals responsive
-
-### Key Features Now Working
-- Log Effect button opens beautiful modal
-- Strength selection with visual bars
-- Effect type selection
-- Hydrate button with confirmation
-- Note button with prompt
-- Help modal with full guide
-- Phase-aware contextual hints
-
-### The Experience Flow
-1. User starts session → sees "Waiting for Effects"
-2. After 3 seconds → gentle prompt to log effects
-3. Clicks Log Effect → beautiful modal with visual strength
-4. Selects strength → bars fill up visually
-5. Picks effect types → icons make it clear
-6. Submits → encouraging feedback appears
-7. Effect wave builds → unique pattern emerges
-8. Phase transitions → smart insights appear
-
-### Next Priority: Session Story Builder
-Now that the core experience is perfect, build shareable summaries:
-- Auto-generate session narrative
-- Include visualizations in export
-- Share to kratom communities
-- "45-min Green Malay: smooth energy, peaked at 6/10"
-
-### Technical Achievement
-- Zero console errors
-- Smooth 60fps animations
-- All modals working
-- Props correctly passed
-- State management clean
-
-### Files Modified
-- `EffectTracker.tsx` - Complete rewrite with intuitive UI
-- `ActiveSession.tsx` - Added labels, help, first-time prompts
-- All changes committed and pushed
+### Key Design Decisions Documented
+- **Timer = logging trigger** (tap for radial, long-press for detail)
+- **Minimal particles by default** (24-36, Cinematic Mode optional)
+- **Percentile bands** instead of single ghost curve
+- **Phase ring** around timer (P0 priority)
+- **Simple Mode** for onboarding
+- **Epoch-based timing** for background reliability
 
 ### For Next Session
-Build SessionStory component for shareable session summaries. The core experience is now perfect - intuitive, beautiful, and encouraging.
+Start implementing Sprint 1 from DESIGN_DECISIONS.md:
+1. Epoch-based timer with pause/resume arrays
+2. Timer-tap → radial slider interaction
+3. Background recovery with drift detection
+4. Age gate & consent flow
 
 ## Quick Start Command
 ```
-Continue MaengMe - build Session Story for shareable summaries
+Continue MaengMe - implement timer-tap logging and epoch-based timing from DESIGN_DECISIONS.md Sprint 1
 ```

@@ -11,24 +11,30 @@ interface BellCurveProps {
 }
 
 export const BellCurve: React.FC<BellCurveProps> = ({ 
-  elapsed, 
-  laps,
+  elapsed = 0, 
+  laps = [],
   expectedOnset = 600000,   // 10 min default
   expectedPeak = 2700000,   // 45 min default  
   expectedTail = 5400000    // 90 min default
 }) => {
-  const maxTime = expectedTail * 1.2; // Add some buffer
-  const currentPosition = (elapsed / maxTime) * 100;
+  // Ensure we have valid numbers
+  const safeElapsed = Number.isFinite(elapsed) ? elapsed : 0;
+  const safeOnset = Number.isFinite(expectedOnset) ? expectedOnset : 600000;
+  const safePeak = Number.isFinite(expectedPeak) ? expectedPeak : 2700000;
+  const safeTail = Number.isFinite(expectedTail) ? expectedTail : 5400000;
+  
+  const maxTime = safeTail * 1.2; // Add some buffer
+  const currentPosition = Math.min(100, Math.max(0, (safeElapsed / maxTime) * 100));
   
   // Find actual lap times (safely handle undefined/empty laps)
   const actualOnset = laps?.find(l => l.type === 'onset')?.elapsed;
   const actualPeak = laps?.find(l => l.type === 'peak')?.elapsed;
   const actualTail = laps?.find(l => l.type === 'tail')?.elapsed;
   
-  // Calculate positions as percentages
-  const onsetPos = (expectedOnset / maxTime) * 100;
-  const peakPos = (expectedPeak / maxTime) * 100;
-  const tailPos = (expectedTail / maxTime) * 100;
+  // Calculate positions as percentages (with bounds checking)
+  const onsetPos = Math.min(100, Math.max(0, (safeOnset / maxTime) * 100));
+  const peakPos = Math.min(100, Math.max(0, (safePeak / maxTime) * 100));
+  const tailPos = Math.min(100, Math.max(0, (safeTail / maxTime) * 100));
   
   // Bell curve path - using quadratic bezier curves
   const curvePath = `
@@ -72,7 +78,7 @@ export const BellCurve: React.FC<BellCurveProps> = ({
         
         {/* Fill under curve up to current position */}
         <clipPath id="progressClip">
-          <rect x="0" y="0" width={currentPosition} height="100" />
+          <rect x="0" y="0" width={Number.isFinite(currentPosition) ? currentPosition : 0} height="100" />
         </clipPath>
         
         <path
