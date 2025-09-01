@@ -132,4 +132,37 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--glass-white-30);
-}
+}  /* Glass Input Styles */
+  .glass-input {
+    @apply bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/40;
+    @apply focus:outline-none focus:border-green-400/50 transition-all;
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Glass Card */
+  .glass-card {
+    @apply bg-white/5 border border-white/10 rounded-2xl;
+    backdrop-filter: blur(20px);
+    transition: all 0.3s ease;
+  }
+  
+  .glass-card:hover {
+    @apply bg-white/8 border-white/20;
+  }
+  
+  /* Product Vein Colors */
+  .vein-red { @apply text-red-400 bg-red-500/20 border-red-500/30; }
+  .vein-green { @apply text-green-400 bg-green-500/20 border-green-500/30; }
+  .vein-white { @apply text-white bg-white/20 border-white/30; }
+  .vein-yellow { @apply text-yellow-400 bg-yellow-500/20 border-yellow-500/30; }
+  .vein-mixed { @apply text-purple-400 bg-purple-500/20 border-purple-500/30; }
+  
+  /* Molecular Animation */
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+  }
+  
+  .molecule {
+    animation: float 3s ease-in-out infinite;
+  }

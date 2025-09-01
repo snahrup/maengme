@@ -1,11 +1,13 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from './Logo';
+import { Package, Clock, ChartBar, Sparkles } from 'lucide-react';
 
 interface HomeScreenProps {
   onStartSession: () => void;
   onViewHistory: () => void;
   onViewPresets: () => void;
+  onSelectProduct: () => void;
   sessionsCount: number;
   lastSessionDate?: string;
 }
@@ -14,9 +16,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onStartSession,
   onViewHistory,
   onViewPresets,
+  onSelectProduct,
   sessionsCount = 0,
   lastSessionDate
 }) => {
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <motion.div 
@@ -52,12 +56,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <div className="space-y-3">
           {/* Start New Session - Primary */}
           <motion.button
-            onClick={onStartSession}
-            className="w-full py-4 bg-glass-15 backdrop-blur-md border border-glass-30 rounded-glass-lg text-white text-body hover:bg-glass-20 transition-all"
+            onClick={onSelectProduct}
+            className="w-full py-4 bg-glass-15 backdrop-blur-md border border-glass-30 rounded-glass-lg text-white text-body hover:bg-glass-20 transition-all group"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            Start New Session
+            <div className="flex items-center justify-center gap-2">
+              <Package className="w-5 h-5 text-green-400" />
+              <span>Start New Session</span>
+              <Sparkles className="w-4 h-4 text-green-400 group-hover:animate-pulse" />
+            </div>
           </motion.button>
           
           {/* Secondary Actions */}

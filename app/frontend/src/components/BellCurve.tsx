@@ -164,10 +164,7 @@ export const BellCurve: React.FC<BellCurveProps> = ({
         </div>
       </div>
       
-      {/* Title */}
-      <div className="text-center mt-4">
-        <p className="text-white/70 text-small">Session Curve</p>
-      </div>
+
     </div>
   );
 };
