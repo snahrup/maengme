@@ -1,32 +1,27 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Leaf, Clock, TrendingUp, Zap } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useQuickStartStore } from '../../stores/quickStartStore';
 import { formatDistanceToNow } from 'date-fns';
 
-export const QuickStartHero: React.FC = () => {
-  const navigate = useNavigate();
+interface QuickStartHeroProps {
+  onStartSession: () => void;
+  onSelectProduct: () => void;
+}
+
+export const QuickStartHero: React.FC<QuickStartHeroProps> = ({ onStartSession, onSelectProduct }) => {
   const { canQuickStart, getQuickStartData } = useQuickStartStore();
   
   const quickStartData = getQuickStartData();
   const hasQuickStart = canQuickStart();
   
   const handleQuickStart = () => {
-    if (hasQuickStart && quickStartData) {
-      // Navigate directly to active session with last settings
-      navigate('/session/active', {
-        state: {
-          productId: quickStartData.lastProductId,
-          productName: quickStartData.lastProductName,
-          dose: quickStartData.lastDose,
-          method: quickStartData.lastMethod,
-          quickStart: true
-        }
-      });
+    if (hasQuickStart) {
+      // Use the quick start callback
+      onStartSession();
     } else {
       // No previous session, go to product selection
-      navigate('/products');
+      onSelectProduct();
     }
   };
 

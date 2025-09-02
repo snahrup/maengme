@@ -85,7 +85,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
         {/* Quick Start Hero */}
         <div className="mb-6">
-          <QuickStartHero />
+          <QuickStartHero 
+            onStartSession={onStartSession}
+            onSelectProduct={onSelectProduct}
+          />
         </div>
 
         {/* Stats Grid */}
