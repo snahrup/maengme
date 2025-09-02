@@ -47,6 +47,7 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
   const [doseCount, setDoseCount] = useState(1); // Track number of doses
   const [totalDose, setTotalDose] = useState(preset.dose);
   const [showInfo, setShowInfo] = useState(false);
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
 
   // Add dose
   const handleAddDose = useCallback(() => {
@@ -70,6 +71,27 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
       icon: '✨',
     });
   }, [doseCount, totalDose, preset, onLap]);
+
+  // Handle end session with confirmation
+  const handleEndSession = useCallback(() => {
+    setShowEndConfirm(true);
+  }, []);
+
+  const confirmEndSession = useCallback(() => {
+    setShowEndConfirm(false);
+    onEnd();
+    toast.success('Session saved successfully!', {
+      duration: 3000,
+      position: 'top-center',
+      style: {
+        background: 'rgba(34, 197, 94, 0.2)',
+        color: '#fff',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(34, 197, 94, 0.3)',
+      },
+      icon: '✅',
+    });
+  }, [onEnd]);
 
   // Calculate current phase based on elapsed time
   useEffect(() => {
@@ -270,11 +292,12 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
                 <span className="text-white font-medium">Pause</span>
               </button>
               <button
-                onClick={onEnd}
-                className="py-4 px-6 rounded-full bg-red-500/20 backdrop-blur-xl border border-red-500/30 hover:bg-red-500/30 transition-colors"
+                onClick={handleEndSession}
+                className="py-4 px-6 rounded-full bg-red-500/20 backdrop-blur-xl border border-red-500/30 hover:bg-red-500/30 transition-colors flex items-center justify-center gap-2"
                 aria-label="End Session"
               >
                 <Square className="w-5 h-5 text-red-400" />
+                <span className="text-red-400 font-medium">End</span>
               </button>
             </>
           ) : (
@@ -287,11 +310,12 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
                 <span className="text-white font-medium">Resume</span>
               </button>
               <button
-                onClick={onEnd}
-                className="py-4 px-6 rounded-full bg-red-500/20 backdrop-blur-xl border border-red-500/30 hover:bg-red-500/30 transition-colors"
+                onClick={handleEndSession}
+                className="py-4 px-6 rounded-full bg-red-500/20 backdrop-blur-xl border border-red-500/30 hover:bg-red-500/30 transition-colors flex items-center justify-center gap-2"
                 aria-label="End Session"
               >
                 <Square className="w-5 h-5 text-red-400" />
+                <span className="text-red-400 font-medium">End</span>
               </button>
             </>
           )}
@@ -361,6 +385,79 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
               >
                 Close
               </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* End Session Confirmation Modal */}
+      <AnimatePresence>
+        {showEndConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-6"
+            onClick={() => setShowEndConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-sm p-6 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-white">End Session?</h3>
+                <button
+                  onClick={() => setShowEndConfirm(false)}
+                  className="p-2 rounded-full hover:bg-white/10 transition-colors"
+                >
+                  <X className="w-5 h-5 text-white/60" />
+                </button>
+              </div>
+              
+              <div className="space-y-4 mb-6">
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                  <p className="text-white/60 text-sm mb-1">Session Duration</p>
+                  <p className="text-white text-lg font-medium">
+                    {formatTime(elapsed)}
+                  </p>
+                </div>
+                
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                  <p className="text-white/60 text-sm mb-1">Total Consumed</p>
+                  <p className="text-white text-lg font-medium">
+                    {totalDose} {preset.doseUnit || 'g'} ({doseCount} {doseCount === 1 ? 'dose' : 'doses'})
+                  </p>
+                </div>
+                
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                  <p className="text-white/60 text-sm mb-1">Product</p>
+                  <p className="text-white text-lg font-medium">
+                    {preset.product?.name || 'Unknown'}
+                  </p>
+                </div>
+              </div>
+              
+              <p className="text-white/60 text-sm text-center mb-6">
+                This will save your session to history. This action cannot be undone.
+              </p>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowEndConfirm(false)}
+                  className="flex-1 py-3 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 hover:bg-white/20 transition-colors text-white font-medium"
+                >
+                  Continue Session
+                </button>
+                <button
+                  onClick={confirmEndSession}
+                  className="flex-1 py-3 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white font-medium hover:opacity-90 transition-opacity"
+                >
+                  End Session
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
