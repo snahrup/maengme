@@ -14,6 +14,7 @@ import { ProductSelector } from './components/ProductSelector';
 import { ProductDetails } from './components/ProductDetails';
 import { ActiveSession } from './components/ActiveSession';
 import { HistoryView } from './components/HistoryView';
+import { DebugPanel } from './components/DebugPanel';
 import { Lap, LapType } from './types/timer';
 import { Product, ProductPreset } from './types/product';
 import './App.css';
@@ -62,8 +63,10 @@ function App() {
   
   // Handle start session with preset
   const handleStartWithPreset = useCallback((preset: ProductPreset) => {
+    console.log('handleStartWithPreset called with preset:', preset);
     setActivePreset(preset);
     setCurrentView('session');
+    console.log('View should now be session');
     reset();
     setLaps([]);
     start();
@@ -164,8 +167,23 @@ function App() {
     }
   }, [start, reset]);
   
+  // Debug logging
+  useEffect(() => {
+    console.log('Current view:', currentView);
+    console.log('Active preset:', activePreset);
+  }, [currentView, activePreset]);
+  
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0E1A2F] overflow-hidden">
+      {/* Debug Panel - Always visible */}
+      <DebugPanel 
+        currentView={currentView}
+        activePreset={activePreset}
+        selectedProduct={selectedProduct}
+        elapsed={elapsed}
+        state={state}
+      />
+      
       {/* Main Content */}
       <div className="relative z-10">
         <AnimatePresence mode="wait">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Play, 
@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { BellCurve } from './BellCurve';
 import { InteractiveTimer } from './InteractiveTimer';
+import { AdaptiveParticles } from './AdaptiveParticles';
+import { BreathingGlow } from './BreathingGlow';
 import { ProductPreset } from '../types/product';
 import { Lap, LapType } from '../types/timer';
 import { toast } from 'react-hot-toast';
@@ -111,6 +113,31 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
     }
   }, [elapsed, preset]);
 
+  // Calculate intensity (0-1) based on proximity to peak
+  const intensity = useMemo(() => {
+    const elapsedMin = elapsed / 60000;
+    const onset = preset?.product?.expectedOnset || 10;
+    const peak = preset?.product?.expectedPeak || 45;
+    const duration = preset?.product?.expectedDuration || 120;
+
+    if (elapsedMin < onset) {
+      // Building up slowly during waiting
+      return Math.min(0.3, elapsedMin / onset * 0.3);
+    } else if (elapsedMin < peak) {
+      // Ramping up during onset
+      const progress = (elapsedMin - onset) / (peak - onset);
+      return 0.3 + progress * 0.5; // 0.3 to 0.8
+    } else if (elapsedMin < peak + 30) {
+      // Peak intensity
+      const peakProgress = (elapsedMin - peak) / 30;
+      return 0.8 + (1 - Math.abs(peakProgress - 0.5) * 2) * 0.2; // 0.8 to 1.0 with slight fade
+    } else {
+      // Comedown
+      const comedownProgress = Math.min(1, (elapsedMin - (peak + 30)) / (duration - (peak + 30)));
+      return Math.max(0.2, 0.8 - comedownProgress * 0.6); // 0.8 to 0.2
+    }
+  }, [elapsed, preset]);
+
   // Format elapsed time
   const formatTime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
@@ -146,6 +173,15 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0E1A2F] relative">
+      {/* Ambient Background Animations */}
+      <BreathingGlow phase={currentPhase} intensity={intensity} />
+      <AdaptiveParticles 
+        phase={currentPhase} 
+        intensity={intensity}
+        historicalPeakTime={preset?.product?.expectedPeak ? preset.product.expectedPeak * 60000 : undefined}
+        currentTime={elapsed}
+      />
+
       {/* Navigation Bar */}
       <div className="relative z-10 flex items-center justify-between p-6">
         <button
