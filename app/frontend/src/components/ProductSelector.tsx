@@ -66,7 +66,7 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({
           <div className="p-6 border-b border-white/10">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <Package className="w-6 h-6 text-green-400" />
+                <Package className="w-6 h-6 text-blue-400" />
                 <h2 className="text-2xl font-light text-white">Select Product</h2>
               </div>
               <button
@@ -85,7 +85,7 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({
                 placeholder="Search by name, brand, or strain..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl                  text-white placeholder-white/40 focus:outline-none focus:border-green-400/50"
+                className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-white/40 focus:outline-none focus:border-blue-400/50"
               />
             </div>
             
@@ -98,7 +98,7 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({
                     onClick={() => setSelectedVein(vein)}
                     className={`px-3 py-1 rounded-full text-xs uppercase tracking-wider transition-all
                       ${selectedVein === vein 
-                        ? 'bg-green-500/30 border-green-500/50 text-green-300' 
+                        ? 'bg-blue-500/30 border-blue-500/50 text-blue-300' 
                         : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'} 
                       border`}
                   >
@@ -162,7 +162,7 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({
                                 </span>
                               </div>
                             </div>
-                            <ChevronRight className="w-5 h-5 text-white/40 group-hover:text-green-400 transition-colors" />
+                            <ChevronRight className="w-5 h-5 text-white/40 group-hover:text-blue-400 transition-colors" />
                           </div>
                         </div>
                       </div>
@@ -170,12 +170,13 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({
                       {/* Quick Stats */}
                       <div className="mt-3 pt-3 border-t border-white/5 flex gap-4 text-xs">
                         <span className="text-white/40">
-                          Onset: <span className="text-green-400">{product.expectedOnset || '?'}min</span>
+                          Onset: <span className="text-blue-400">{product.expectedOnset || '?'}min</span>
                         </span>
                         <span className="text-white/40">
-                          Peak: <span className="text-green-400">{product.expectedPeak || '?'}min</span>                        </span>
+                          Peak: <span className="text-blue-400">{product.expectedPeak || '?'}min</span>
+                        </span>
                         <span className="text-white/40">
-                          Duration: <span className="text-green-400">{product.expectedDuration || '?'}min</span>
+                          Duration: <span className="text-blue-400">{product.expectedDuration || '?'}min</span>
                         </span>
                       </div>
                     </motion.div>
@@ -191,7 +192,7 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({
               className="w-full glass-button flex items-center justify-center gap-2 group"
               onClick={() => {/* TODO: Open custom product form */}}
             >
-              <Sparkles className="w-4 h-4 group-hover:text-green-400 transition-colors" />
+              <Sparkles className="w-4 h-4 group-hover:text-blue-400 transition-colors" />
               <span>Add Custom Product</span>
             </button>
           </div>
