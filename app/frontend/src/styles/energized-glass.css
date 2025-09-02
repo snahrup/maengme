@@ -1,0 +1,54 @@
+/* Energized Glass Theme - MaengMe */
+
+/* Base glass components remain unchanged */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 22px;
+  transition: all 0.3s ease;
+}
+
+/* Green energy for interactive elements */
+.btn-primary {
+  background: linear-gradient(135deg, #00FF41, #00D837);
+  color: #0B1220;
+  font-weight: 600;
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 40px rgba(0, 255, 65, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Quick Start button with pulse animation */
+.quick-start-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid #00FF41;
+  color: #00FF41;
+  position: relative;
+  overflow: hidden;
+}
+
+.quick-start-btn::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, transparent, #00FF41, transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.quick-start-btn:hover::before {
+  opacity: 0.3;
+  animation: shimmer 2s infinite;
+}
+
+/* Active session indicators */
+.timer-active {
+  color: #00FF41;
+  text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+  animation: pulse-glow 2s ease-in-out infinite;
+}

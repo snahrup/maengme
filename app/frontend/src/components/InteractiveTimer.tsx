@@ -236,9 +236,27 @@ export const InteractiveTimer: React.FC<InteractiveTimerProps> = ({
         whileTap={{ scale: 0.98 }}
       >
         <div className="text-center p-12">
-          <div className="text-7xl font-display font-extralight text-white tabular-nums tracking-tight">
+          <motion.div 
+            className="text-7xl font-display font-extralight tabular-nums tracking-tight"
+            style={{
+              color: state === 'running' ? '#00FF41' : '#FFFFFF',
+              textShadow: state === 'running' ? '0 0 30px rgba(0, 255, 65, 0.6)' : 'none',
+            }}
+            animate={state === 'running' ? {
+              textShadow: [
+                '0 0 30px rgba(0, 255, 65, 0.6)',
+                '0 0 40px rgba(0, 255, 65, 0.8)',
+                '0 0 30px rgba(0, 255, 65, 0.6)'
+              ]
+            } : {}}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
             {formatTime(elapsed)}
-          </div>
+          </motion.div>
           
           {/* Small hint text */}
           {state === 'running' && (

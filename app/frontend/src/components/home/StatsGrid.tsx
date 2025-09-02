@@ -6,9 +6,9 @@ import { useSessionStore } from '../../stores/sessionStore';
 interface StatCard {
   label: string;
   value: string | number;
-  gradient: string;
   icon: React.ElementType;
   delay: number;
+  isActive?: boolean;
 }
 
 export const StatsGrid: React.FC = () => {
@@ -16,6 +16,18 @@ export const StatsGrid: React.FC = () => {
 
   // Calculate stats
   const totalSessions = sessions.length;
+  
+  // Check if there are sessions today
+  const hasSessionsToday = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return sessions.some(session => {
+      const sessionDate = new Date(session.startTime);
+      sessionDate.setHours(0, 0, 0, 0);
+      return sessionDate.getTime() === today.getTime();
+    });
+  };
   
   // Calculate current streak (consecutive days with sessions)
   const calculateStreak = () => {
@@ -67,8 +79,8 @@ export const StatsGrid: React.FC = () => {
     return `${hours}h ${mins}m`;
   };
 
-  // Get today's peak intensity
-  const getTodaysPeak = () => {
+  // Get today's session count
+  const getTodaysCount = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
@@ -78,42 +90,37 @@ export const StatsGrid: React.FC = () => {
       return sessionDate.getTime() === today.getTime();
     });
     
-    if (todaysSessions.length === 0) return '—';
-    
-    const maxIntensity = Math.max(...todaysSessions.flatMap(s => 
-      s.intensityLogs?.map(log => log.value) || [0]
-    ));
-    
-    return maxIntensity > 0 ? `${maxIntensity}/10` : '—';
+    return todaysSessions.length;
   };
+
+  const todayCount = getTodaysCount();
+  const currentStreak = calculateStreak();
 
   const stats: StatCard[] = [
     {
-      label: 'Total Sessions',
-      value: totalSessions,
-      gradient: 'from-purple-500 to-indigo-600',
-      icon: Activity,
-      delay: 0
+      label: 'Today',
+      value: todayCount,
+      icon: Calendar,
+      delay: 0,
+      isActive: todayCount > 0
     },
     {
-      label: 'Current Streak',
-      value: `${calculateStreak()} days`,
-      gradient: 'from-orange-500 to-red-600',
+      label: 'Streak',
+      value: `${currentStreak} days`,
       icon: Flame,
-      delay: 0.1
+      delay: 0.1,
+      isActive: currentStreak > 0 && hasSessionsToday()
+    },
+    {
+      label: 'Total',
+      value: totalSessions,
+      icon: Activity,
+      delay: 0.2
     },
     {
       label: 'Avg Duration',
       value: calculateAvgDuration(),
-      gradient: 'from-cyan-500 to-blue-600',
       icon: Clock,
-      delay: 0.2
-    },
-    {
-      label: 'Peak Today',
-      value: getTodaysPeak(),
-      gradient: 'from-green-500 to-emerald-600',
-      icon: TrendingUp,
       delay: 0.3
     }
   ];
@@ -128,29 +135,53 @@ export const StatsGrid: React.FC = () => {
           transition={{ delay: stat.delay, duration: 0.4 }}
           className="relative group"
         >
-          {/* Gradient border */}
-          <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${stat.gradient} p-[1px]`}>
-            <div className="h-full w-full rounded-2xl bg-gray-900" />
-          </div>
-          
           {/* Content */}
-          <div className="relative rounded-2xl p-4 overflow-hidden">
-            {/* Glass effect background */}
-            <div 
-              className="absolute inset-0 rounded-2xl"
-              style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)'
-              }}
-            />
-            
-            {/* Hover gradient */}
-            <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+          <div 
+            className="relative rounded-2xl p-4 overflow-hidden transition-all duration-300"
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              border: stat.isActive 
+                ? '1px solid rgba(0, 255, 65, 0.3)' 
+                : '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: stat.isActive 
+                ? '0 0 20px rgba(0, 255, 65, 0.15)' 
+                : 'none'
+            }}
+          >
+            {/* Active pulse effect */}
+            {stat.isActive && (
+              <motion.div
+                className="absolute inset-0 rounded-2xl"
+                style={{
+                  background: 'radial-gradient(circle at center, rgba(0, 255, 65, 0.1) 0%, transparent 70%)'
+                }}
+                animate={{
+                  opacity: [0.3, 0.6, 0.3]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+            )}
             
             <div className="relative z-10">
-              <stat.icon className="w-5 h-5 text-white/60 mb-2" />
-              <div className="text-2xl font-bold text-white">
+              <stat.icon 
+                className="w-5 h-5 mb-2" 
+                style={{ 
+                  color: stat.isActive ? '#00FF41' : 'rgba(255, 255, 255, 0.6)'
+                }}
+              />
+              <div 
+                className="text-2xl font-bold"
+                style={{
+                  color: stat.isActive ? '#00FF41' : '#FFFFFF',
+                  textShadow: stat.isActive ? '0 0 20px rgba(0, 255, 65, 0.5)' : 'none'
+                }}
+              >
                 {stat.value}
               </div>
               <div className="text-xs text-white/60">{stat.label}</div>

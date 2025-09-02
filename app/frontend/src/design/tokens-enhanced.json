@@ -1,0 +1,58 @@
+{
+  "colors": {
+    "bg": {
+      "start": "#0B1220",
+      "end": "#0E1A2F"
+    },
+    "glass": {
+      "tint": "#0F1E36AA",
+      "tintActive": "#0F1E3633",
+      "stroke": "#FFFFFF33",
+      "strokeActive": "#00FF4133"
+    },
+    "text": {
+      "primary": "#F5F7FB",
+      "secondary": "#C9D2E3"
+    },
+    "accent": {
+      "primary": "#1DA1FF",
+      "primary2": "#007AFF",
+      "success": "#34C759",
+      "alert": "#FF3B30",
+      "energy": "#00FF41",
+      "energyDim": "#00FF4180",
+      "energyGlow": "#00FF4133"
+    },
+    "neutral": {
+      "chip": "#C8D0E0",
+      "tail": "#A8C6FF"
+    }
+  },
+  "effects": {
+    "glowGreen": "0 0 20px rgba(0, 255, 65, 0.3)",
+    "glowGreenIntense": "0 0 40px rgba(0, 255, 65, 0.5)",
+    "pulseGreen": "0 0 30px rgba(0, 255, 65, 0.4)"
+  },
+  "radii": {
+    "lg": 22,
+    "xl": 28
+  },
+  "blur": {
+    "panel": 18,
+    "chip": 12
+  },
+  "shadow": {
+    "elev1": "0 10px 30px rgba(0,0,0,0.35)",
+    "elevGreen": "0 10px 30px rgba(0, 255, 65, 0.15)"
+  },
+  "typography": {
+    "display": {
+      "size": 64,
+      "weight": 600
+    },
+    "body": {
+      "size": 16,
+      "weight": 400
+    }
+  }
+}

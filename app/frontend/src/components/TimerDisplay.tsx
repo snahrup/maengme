@@ -4,9 +4,14 @@ import { motion } from 'framer-motion';
 interface TimerDisplayProps {
   elapsed: number;
   className?: string;
+  isActive?: boolean;
 }
 
-export const TimerDisplay: React.FC<TimerDisplayProps> = ({ elapsed, className = '' }) => {
+export const TimerDisplay: React.FC<TimerDisplayProps> = ({ 
+  elapsed, 
+  className = '',
+  isActive = false 
+}) => {
   const formatTime = (ms: number): string => {
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
@@ -29,9 +34,27 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ elapsed, className =
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="text-timer-lg font-display font-extralight text-white tabular-nums tracking-tight">
+      <motion.div 
+        className="text-timer-lg font-display font-extralight tabular-nums tracking-tight"
+        style={{
+          color: isActive ? '#00FF41' : '#FFFFFF',
+          textShadow: isActive ? '0 0 30px rgba(0, 255, 65, 0.6)' : 'none',
+        }}
+        animate={isActive ? {
+          textShadow: [
+            '0 0 30px rgba(0, 255, 65, 0.6)',
+            '0 0 40px rgba(0, 255, 65, 0.8)',
+            '0 0 30px rgba(0, 255, 65, 0.6)'
+          ]
+        } : {}}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      >
         {formatTime(elapsed)}
-      </div>
+      </motion.div>
     </motion.div>
   );
 };

@@ -29,20 +29,15 @@ export const QuickStartHero: React.FC<QuickStartHeroProps> = ({ onStartSession, 
     <motion.div 
       className="relative overflow-hidden rounded-3xl p-8"
       style={{
-        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(20, 184, 166, 0.1) 100%)',
+        background: 'rgba(255, 255, 255, 0.05)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.05)'
+        border: '1px solid rgba(255, 255, 255, 0.2)'
       }}
       initial={{ scale: 0.9, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.4 }}
     >
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-teal-500/20 to-cyan-500/20 animate-gradient" />
-      </div>
-      
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-white/60 text-sm font-medium uppercase tracking-wider">Quick Start</h3>
@@ -50,10 +45,14 @@ export const QuickStartHero: React.FC<QuickStartHeroProps> = ({ onStartSession, 
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/20"
+              className="flex items-center gap-1 px-2 py-1 rounded-full"
+              style={{
+                background: 'rgba(0, 255, 65, 0.1)',
+                border: '1px solid rgba(0, 255, 65, 0.3)'
+              }}
             >
-              <Zap className="w-3 h-3 text-emerald-400" />
-              <span className="text-xs text-emerald-400 font-medium">Ready</span>
+              <Zap className="w-3 h-3" style={{ color: '#00FF41' }} />
+              <span className="text-xs font-medium" style={{ color: '#00FF41' }}>Ready</span>
             </motion.div>
           )}
         </div>
@@ -61,16 +60,48 @@ export const QuickStartHero: React.FC<QuickStartHeroProps> = ({ onStartSession, 
         <motion.button
           whileTap={{ scale: 0.95 }}
           whileHover={{ scale: 1.02 }}
-          className="w-full py-6 rounded-2xl font-bold text-xl shadow-2xl relative overflow-hidden group"
+          className="w-full py-6 rounded-2xl font-bold text-xl relative overflow-hidden group"
           style={{
             background: hasQuickStart 
-              ? 'linear-gradient(135deg, #10B981 0%, #14B8A6 100%)'
-              : 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
-            color: '#000'
+              ? 'linear-gradient(135deg, #00FF41 0%, #00D837 100%)'
+              : 'rgba(255, 255, 255, 0.05)',
+            border: hasQuickStart ? 'none' : '2px solid #00FF41',
+            color: hasQuickStart ? '#0B1220' : '#00FF41',
+            boxShadow: hasQuickStart 
+              ? '0 0 30px rgba(0, 255, 65, 0.4), inset 0 0 20px rgba(0, 255, 65, 0.2)'
+              : '0 0 20px rgba(0, 255, 65, 0.2)',
+            transition: 'all 0.3s ease'
           }}
           onClick={handleQuickStart}
         >
-          <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
+          {/* Pulse ring animation for ready state */}
+          {hasQuickStart && (
+            <motion.div
+              className="absolute inset-0 rounded-2xl"
+              style={{
+                border: '2px solid rgba(0, 255, 65, 0.3)'
+              }}
+              animate={{
+                scale: [1, 1.05, 1],
+                opacity: [0.5, 0, 0.5]
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          )}
+          
+          {/* Shimmer effect on hover */}
+          <div 
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+            style={{
+              background: 'linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.2) 50%, transparent 60%)',
+              animation: 'shimmer 2s infinite'
+            }}
+          />
+          
           <span className="relative z-10 flex items-center justify-center gap-2">
             {hasQuickStart ? 'Quick Start Session' : 'Start First Session'}
             <TrendingUp className="w-5 h-5" />
@@ -82,7 +113,7 @@ export const QuickStartHero: React.FC<QuickStartHeroProps> = ({ onStartSession, 
             className="mt-6 p-4 rounded-xl"
             style={{
               background: 'rgba(255, 255, 255, 0.03)',
-              border: '1px solid rgba(255, 255, 255, 0.05)'
+              border: '1px solid rgba(255, 255, 255, 0.1)'
             }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -90,7 +121,7 @@ export const QuickStartHero: React.FC<QuickStartHeroProps> = ({ onStartSession, 
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Leaf className="w-4 h-4 text-emerald-400" />
+                <Leaf className="w-4 h-4" style={{ color: '#00FF41' }} />
                 <span className="text-white font-medium">
                   {quickStartData.lastProductName || 'Last Product'}
                 </span>
@@ -115,7 +146,7 @@ export const QuickStartHero: React.FC<QuickStartHeroProps> = ({ onStartSession, 
           <div className="mt-6 p-4 rounded-xl text-center"
             style={{
               background: 'rgba(255, 255, 255, 0.03)',
-              border: '1px solid rgba(255, 255, 255, 0.05)'
+              border: '1px solid rgba(255, 255, 255, 0.1)'
             }}
           >
             <p className="text-white/50 text-sm">
@@ -127,6 +158,14 @@ export const QuickStartHero: React.FC<QuickStartHeroProps> = ({ onStartSession, 
           </div>
         )}
       </div>
+      
+      {/* Add shimmer keyframes */}
+      <style jsx>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(200%); }
+        }
+      `}</style>
     </motion.div>
   );
 };
