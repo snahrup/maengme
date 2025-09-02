@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Toaster } from 'react-hot-toast';
@@ -6,6 +6,7 @@ import { db } from './store/database';
 import { useEpochTimer } from './hooks/useEpochTimer';
 import { usePrimeWindows } from './hooks/usePrimeWindows';
 import { useSessionManager } from './hooks/useSessionManager';
+import { useQuickStartStore } from './stores/quickStartStore';
 import { SplashScreen } from './components/SplashScreen';
 import { HomeScreen } from './components/HomeScreen';
 import { ProductSelector } from './components/ProductSelector';
@@ -58,8 +59,16 @@ function App() {
     start();
     startTimeRef.current = Date.now();
     
-    // Save preset to database for future quick-start
-    // TODO: Implement preset saving logic
+    // Save for quick start
+    const { setLastSession } = useQuickStartStore.getState();
+    if (preset.product) {
+      setLastSession(
+        preset.productId,
+        preset.product.name,
+        preset.dose,
+        preset.method
+      );
+    }
   }, [start, reset]);  
   // Handle lap
   const handleLap = useCallback((type: LapType) => {
@@ -117,15 +126,32 @@ function App() {
     setSelectedProduct(null);
   }, []);
   
-  // Quick start with last preset
+  // Quick start with last preset or route to product selection
   const handleQuickStart = useCallback(() => {
-    // TODO: Load last used preset from database
-    // For now, just start basic timer
-    setCurrentView('session');
-    reset();
-    setLaps([]);
-    start();
-    startTimeRef.current = Date.now();
+    const { getQuickStartData } = useQuickStartStore.getState();
+    const quickStartData = getQuickStartData();
+    
+    if (quickStartData) {
+      // Create preset from quick start data
+      const quickPreset: ProductPreset = {
+        id: `quick-${Date.now()}`,
+        productId: quickStartData.lastProductId!,
+        product: { name: quickStartData.lastProductName! } as Product,
+        dose: quickStartData.lastDose,
+        doseUnit: 'g',
+        method: quickStartData.lastMethod as any
+      };
+      
+      setActivePreset(quickPreset);
+      setCurrentView('session');
+      reset();
+      setLaps([]);
+      start();
+      startTimeRef.current = Date.now();
+    } else {
+      // No quick start data, go to product selection
+      setCurrentView('product-select');
+    }
   }, [start, reset]);
   
   return (
