@@ -1,74 +1,95 @@
 # MaengMe Handoff Document
 
-## Session Update - January 3, 2025, 5:00 PM
+## Session Update - January 3, 2025, 7:48 PM
 
 ### What Changed
-- **Updated Product Pages to Blue Theme**
-  - Replaced all green accents with blue (#1DA1FF → #007AFF gradient)
-  - ProductSelector: Updated package icon, search focus border, filter buttons, chevron hover, stats text
-  - ProductDetails: Updated all green elements to blue (icons, buttons, progress bars)
-  - Consistent with StartScreen's blue ring aesthetic
-  - Start Session button now uses blue gradient with white text
+- **Added Phase 1 Animation Features to Active Session**
+  - AdaptiveParticles: Phase-responsive particle system with neural network connections
+    - Particles scale from 5 (waiting) to 50 (peak) with color transitions
+    - Intensity-based density and connection lines during peak
+    - Blue → Yellow → Green → Purple color progression through phases
+  - BreathingGlow: Ambient background animations
+    - Multiple radial gradients with breathing rhythm
+    - Phase-based colors and speed adjustments
+    - Extra edge glows during peak phase
   
-- **Color Replacements Made**:
-  - Package icon: green-400 → blue-400
-  - Focus borders: green-400/50 → blue-400/50
-  - Selected filters: green-500/30 → blue-500/30
-  - Hover states: hover:text-green-400 → hover:text-blue-400
-  - Button gradients: from-green-500 to-green-600 → from-[#1DA1FF] to-[#007AFF]
-  - Accent colors in stats and timeline
+- **Added Debug Panel**  
+  - Purple test tube icon in top-right corner
+  - Shows current view, timer state, elapsed time
+  - Displays preset and product selection status
+  - Helps diagnose navigation issues
+
+- **Code Quality Improvements**
+  - Added intensity calculation (0-1) based on proximity to peak
+  - Integrated animation components with z-index layering
+  - Debug logging for view transitions
 
 ### Current State
-- App running on http://localhost:5178/
+- App running on http://localhost:5183/
 - TypeScript compilation successful - no errors
-- Blue theme consistently applied across product pages
-- **ISSUE**: Navigation flow still broken - can't navigate from ProductDetails to ActiveSession
+- Animations integrated and working (pending navigation fix to test)
+- **ISSUE**: Navigation from ProductDetails → ActiveSession still broken (investigating)
+- Debug panel active for troubleshooting
 
 ### Open Items
-- **CRITICAL**: Fix navigation from ProductDetails → ActiveSession (carried over)
-- End confirmation modal ready but untested due to navigation issue
-- Bell curve visualization needs real-time updates
-- Quick start feature not implemented
-- PWA features not implemented
+- **CRITICAL**: Fix navigation bug - Start Session button not transitioning to ActiveSession view
+- **User Concern**: ProductSelector may still show green theme (check browser cache)
+- Test animations in actual session once navigation fixed
+- Phase 2 features pending: Neural synapse animations at peak
 
 ### Next Actions
-1. **Debug navigation issue** - Find why Start Session doesn't reach ActiveSession
-2. **Test full flow once fixed** - Start → Track doses → End → Verify in stats
-3. **Test end confirmation modal** - Ensure it prevents accidental data loss
-4. **Implement quick start** - Remember last product/dose
-5. **Add PWA features** - Service worker for offline support
+1. **Debug navigation with debug panel** - Monitor state changes during Start Session click
+2. **Clear browser cache** - Ensure blue theme is visible in ProductSelector
+3. **Test animation performance** - Verify smooth 60fps with particles
+4. **Add Phase 2 features** once navigation works:
+   - Electric synapse firing animations during peak buildup
+   - Historical data integration for personalized timing
+   - Pulse synchronization with expected peak time
 
 ### Assumptions Made
-- Blue theme should match StartScreen's gradient (#1DA1FF → #007AFF)
-- All green accents should be replaced with blue
-- Vein colors (red, green, white, yellow) remain unchanged
-- Glass effects should stay at 5-10% opacity
-- Yellow/orange colors for warnings and duration remain unchanged
+- Particle count and intensity should scale with session phase
+- Neural connections only visible during onset/peak phases
+- Background glow should breathe slower when calm, faster near peak
+- Debug panel helps identify state management issues
+- Performance throttling may be needed for older devices
 
 ### Files Touched
-- Modified: `app/frontend/src/components/ProductSelector.tsx` (updated to blue theme)
-- Modified: `app/frontend/src/components/ProductDetails.tsx` (updated to blue theme)
+- Created: `app/frontend/src/components/AdaptiveParticles.tsx` (particle animation system)
+- Created: `app/frontend/src/components/BreathingGlow.tsx` (ambient background effects)
+- Created: `app/frontend/src/components/DebugPanel.tsx` (debugging tool)
+- Modified: `app/frontend/src/components/ActiveSession.tsx` (integrated animations)
+- Modified: `app/frontend/src/App.tsx` (added debug panel and logging)
 
-## Navigation Issue Details
-- Start Session button in ProductDetails should trigger handleStartWithPreset
-- This should set activePreset and change currentView to 'session'
-- Currently seems to reload or stay on same view
-- Needs debugging of App.tsx state flow and view transitions
+## Animation System Details
+
+### Phase Configuration
+- **Waiting**: 5 particles, blue, slow movement (0.2 speed)
+- **Onset**: 15 particles, yellow, medium movement (0.5 speed)
+- **Peak**: 50 particles, green, fast movement (1.2 speed), neural connections
+- **Comedown**: 10 particles, purple, slow movement (0.3 speed)
+
+### Intensity Calculation
+- 0-0.3 during waiting phase
+- 0.3-0.8 during onset (linear ramp)
+- 0.8-1.0 during peak (slight bell curve)
+- 0.8-0.2 during comedown (gradual decrease)
 
 ## Current Issues
-- ⚠️ **Navigation broken**: Can't reach ActiveSession from ProductDetails
-- ✅ Blue theme successfully applied to product pages
+- ⚠️ **Navigation broken**: Debug panel shows view not changing to 'session'
+- ⚠️ **ProductSelector theme**: User reports green theme still visible
+- ✅ Animations implemented but untested in live session
 - ✅ TypeScript compilation passing
-- ✅ Dev server running on port 5178
+- ✅ Dev server running on port 5183
 
 ## Testing Notes
-- Home screen shows blue ring animation correctly
-- Product selector opens but navigation to details may be affected
-- Blue theme consistent across visible components
-- Need to verify ActiveSession once navigation fixed
+- Debug panel accessible via purple test tube icon
+- Console logs added for view transitions
+- Animations use GPU acceleration (transform3d)
+- Particle connections only render when count < 150 distance
 
 ## Next Session Priority
-1. Fix the navigation issue in App.tsx - debug handleStartWithPreset
-2. Test the complete flow with new blue theme
-3. Verify end confirmation modal works
-4. Test session saves and stats display
+1. Use debug panel to identify why navigation fails
+2. Force browser refresh (Ctrl+Shift+R) to clear cache
+3. Test full animation flow in active session
+4. Optimize performance if needed
+5. Add Phase 2 neural synapse features
