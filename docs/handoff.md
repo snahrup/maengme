@@ -1,76 +1,74 @@
 # MaengMe Handoff Document
 
-## Session Update - January 3, 2025, 4:30 PM
+## Session Update - January 3, 2025, 5:00 PM
 
 ### What Changed
-- **Added End Session Confirmation Modal** - Prevents accidental data loss
-  - Shows session summary (duration, total doses, product name)
-  - Clear "Continue Session" and "End Session" buttons  
-  - Glass aesthetic with smooth animations
-  - Warning message that action cannot be undone
+- **Updated Product Pages to Blue Theme**
+  - Replaced all green accents with blue (#1DA1FF → #007AFF gradient)
+  - ProductSelector: Updated package icon, search focus border, filter buttons, chevron hover, stats text
+  - ProductDetails: Updated all green elements to blue (icons, buttons, progress bars)
+  - Consistent with StartScreen's blue ring aesthetic
+  - Start Session button now uses blue gradient with white text
   
-- **Improved End Button UX**
-  - Added "End" label next to Square icon for clarity
-  - Button now shows both icon and text
-  
-- **Added Success Feedback**
-  - Toast notification displays "Session saved successfully!" after ending
-  - Uses green-tinted glass style consistent with app design
-  
-- **Fixed ActiveSession Component**
-  - Added showEndConfirm state for modal control
-  - Added handleEndSession and confirmEndSession functions
-  - Properly integrated with existing save flow
+- **Color Replacements Made**:
+  - Package icon: green-400 → blue-400
+  - Focus borders: green-400/50 → blue-400/50
+  - Selected filters: green-500/30 → blue-500/30
+  - Hover states: hover:text-green-400 → hover:text-blue-400
+  - Button gradients: from-green-500 to-green-600 → from-[#1DA1FF] to-[#007AFF]
+  - Accent colors in stats and timeline
 
 ### Current State
-- App running on http://localhost:5182/
+- App running on http://localhost:5178/
 - TypeScript compilation successful - no errors
-- End confirmation modal properly integrated
-- **ISSUE**: Navigation flow broken - can't navigate from ProductDetails to ActiveSession
+- Blue theme consistently applied across product pages
+- **ISSUE**: Navigation flow still broken - can't navigate from ProductDetails to ActiveSession
 
 ### Open Items
-- **CRITICAL**: Fix navigation from ProductDetails → ActiveSession
-- Bell curve visualization still needs real-time updates
-- Quick start feature (remembering last product) not yet implemented  
-- StartScreen stats need real-time updates when returning from session
-- PWA features (service worker for offline support) not implemented
+- **CRITICAL**: Fix navigation from ProductDetails → ActiveSession (carried over)
+- End confirmation modal ready but untested due to navigation issue
+- Bell curve visualization needs real-time updates
+- Quick start feature not implemented
+- PWA features not implemented
 
 ### Next Actions
 1. **Debug navigation issue** - Find why Start Session doesn't reach ActiveSession
 2. **Test full flow once fixed** - Start → Track doses → End → Verify in stats
-3. **Implement quick start** - Remember last product/dose for one-tap start
-4. **Add real-time bell curve updates** - Make curve respond to elapsed time
+3. **Test end confirmation modal** - Ensure it prevents accidental data loss
+4. **Implement quick start** - Remember last product/dose
 5. **Add PWA features** - Service worker for offline support
+
 ### Assumptions Made
-- Confirmation modal should show all key session metrics
-- Success toast duration of 3 seconds is appropriate
-- End button needs both icon and text for clarity
-- Modal should use same glass aesthetic as rest of app
-- User wants explicit confirmation to prevent data loss
+- Blue theme should match StartScreen's gradient (#1DA1FF → #007AFF)
+- All green accents should be replaced with blue
+- Vein colors (red, green, white, yellow) remain unchanged
+- Glass effects should stay at 5-10% opacity
+- Yellow/orange colors for warnings and duration remain unchanged
 
 ### Files Touched
-- Modified: `app/frontend/src/components/ActiveSession.tsx` (added confirmation modal and handlers)
+- Modified: `app/frontend/src/components/ProductSelector.tsx` (updated to blue theme)
+- Modified: `app/frontend/src/components/ProductDetails.tsx` (updated to blue theme)
 
 ## Navigation Issue Details
 - Start Session button in ProductDetails should trigger handleStartWithPreset
 - This should set activePreset and change currentView to 'session'
-- Currently returns to ProductSelector instead
-- Needs debugging of App.tsx state flow
+- Currently seems to reload or stay on same view
+- Needs debugging of App.tsx state flow and view transitions
 
 ## Current Issues
 - ⚠️ **Navigation broken**: Can't reach ActiveSession from ProductDetails
-- ✅ End confirmation modal added but untested due to navigation issue
+- ✅ Blue theme successfully applied to product pages
 - ✅ TypeScript compilation passing
-- ✅ Dev server running on port 5182
+- ✅ Dev server running on port 5178
 
 ## Testing Notes
-- Confirmation modal code is complete and TypeScript-valid
-- Modal shows session duration, total doses, and product name
-- Success toast configured with green glass styling
-- End button now shows "End" label for clarity
+- Home screen shows blue ring animation correctly
+- Product selector opens but navigation to details may be affected
+- Blue theme consistent across visible components
+- Need to verify ActiveSession once navigation fixed
 
 ## Next Session Priority
-1. Fix the navigation issue in App.tsx - debug why handleStartWithPreset isn't working
-2. Once fixed, test the complete flow with the new confirmation modal
-3. Verify session saves correctly and appears in stats
-4. Test that success toast appears after session end
+1. Fix the navigation issue in App.tsx - debug handleStartWithPreset
+2. Test the complete flow with new blue theme
+3. Verify end confirmation modal works
+4. Test session saves and stats display
