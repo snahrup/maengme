@@ -165,17 +165,7 @@ function App() {
   }, [start, reset]);
   
   return (
-    <div className="min-h-screen bg-gradient-primary overflow-hidden">
-      {/* Background Image */}
-      <div 
-        className="fixed inset-0 z-0"
-        style={{
-          backgroundImage: 'url(/background.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      />      
+    <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0E1A2F] overflow-hidden">
       {/* Main Content */}
       <div className="relative z-10">
         <AnimatePresence mode="wait">

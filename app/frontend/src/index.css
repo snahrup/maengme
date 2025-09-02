@@ -29,10 +29,10 @@
     --radius-lg: 24px;
     --radius-xl: 32px;
     
-    /* Green Background Gradient */
-    --bg-dark: #0A2A20;
-    --bg-mid: #0F3A2A;
-    --bg-light: #134E3C;
+    /* Blue Background Gradient - MaengMe Theme */
+    --bg-dark: #0B1220;
+    --bg-mid: #0E1A2F;
+    --bg-light: #1A2844;
   }
 }
 
@@ -45,9 +45,9 @@ html, body, #root {
 }
 
 body {
-  /* Use the actual background image */
-  background-image: url('/background.png');
-  background-size: cover;
+  /* Consistent blue gradient background */
+  background: linear-gradient(to bottom, #0B1220, #0E1A2F);
+  background-attachment: fixed;
   background-position: center;
   background-attachment: fixed;
   background-repeat: no-repeat;

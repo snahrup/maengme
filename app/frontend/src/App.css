@@ -1,6 +1,6 @@
 /* App specific styles */
 
-/* Ensure html and body take full height with image background */
+/* Ensure html and body take full height with consistent background */
 html {
   height: 100%;
 }
@@ -9,7 +9,7 @@ body {
   min-height: 100%;
   margin: 0;
   padding: 0;
-  /* Background image is set in index.css */
+  /* Background is set in index.css - blue gradient */
 }
 
 #root {
