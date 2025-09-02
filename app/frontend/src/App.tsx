@@ -8,7 +8,8 @@ import { usePrimeWindows } from './hooks/usePrimeWindows';
 import { useSessionManager } from './hooks/useSessionManager';
 import { useQuickStartStore } from './stores/quickStartStore';
 import { SplashScreen } from './components/SplashScreen';
-import { HomeScreen } from './components/HomeScreen';
+import { StartScreen } from './components/StartScreen';
+import { StatsPage } from './components/StatsPage';
 import { ProductSelector } from './components/ProductSelector';
 import { ProductDetails } from './components/ProductDetails';
 import { ActiveSession } from './components/ActiveSession';
@@ -17,7 +18,7 @@ import { Lap, LapType } from './types/timer';
 import { Product, ProductPreset } from './types/product';
 import './App.css';
 
-type AppView = 'splash' | 'home' | 'product-select' | 'product-details' | 'session' | 'history' | 'preset';
+type AppView = 'splash' | 'home' | 'stats' | 'product-select' | 'product-details' | 'session' | 'history' | 'preset';
 
 function App() {
   const [currentView, setCurrentView] = useState<AppView>('splash');
@@ -33,6 +34,15 @@ function App() {
   // Get sessions for stats
   const sessions = useLiveQuery(() => db.sessions.toArray()) || [];
   const lastSession = sessions[0];
+  
+  // Calculate session counts
+  const now = Date.now();
+  const todayStart = new Date().setHours(0, 0, 0, 0);
+  const weekAgo = now - (7 * 24 * 60 * 60 * 1000);
+  
+  const todaySessions = sessions.filter(s => s.startTime >= todayStart).length;
+  const weekSessions = sessions.filter(s => s.startTime >= weekAgo).length;
+  const totalSessions = sessions.length;
   
   // Handle splash complete
   const handleSplashComplete = useCallback(() => {
@@ -174,14 +184,21 @@ function App() {
           )}
           
           {currentView === 'home' && (
-            <HomeScreen
+            <StartScreen
               key="home"
-              onSelectProduct={handleSelectProduct}
-              onStartSession={handleQuickStart}
+              onStartSession={handleSelectProduct}
+              onViewStats={() => setCurrentView('stats')}
               onViewHistory={() => setShowHistory(true)}
-              onViewPresets={() => console.log('Presets view not implemented')}
-              sessionsCount={sessions.length}
-              lastSessionDate={lastSession ? new Date(lastSession.endTime).toLocaleDateString() : undefined}
+              todayCount={todaySessions}
+              weekCount={weekSessions}
+              totalCount={totalSessions}
+            />
+          )}
+          
+          {currentView === 'stats' && (
+            <StatsPage
+              key="stats"
+              onBack={() => setCurrentView('home')}
             />
           )}
           

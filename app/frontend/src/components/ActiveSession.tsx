@@ -5,34 +5,15 @@ import {
   Pause, 
   Square, 
   Home,
-  TrendingUp,
-  Brain,
-  Activity,
-  Zap,
-  ChevronUp,
-  Clock,
-  Sparkles,
   Plus,
-  Droplet,
-  Target,
-  MessageCircle,
-  Eye,
+  Clock,
   Info,
-  HelpCircle,
   X
 } from 'lucide-react';
 import { BellCurve } from './BellCurve';
 import { InteractiveTimer } from './InteractiveTimer';
-import { LapChip } from './LapChip';
-import { LapList } from './LapList';
-import { EffectTracker } from './EffectTracker';
-import { MolecularAnimation } from './MolecularAnimation';
-import { ParticleField } from './ParticleField';
-import { EffectWave } from './EffectWave';
-import { SessionInsights } from './SessionInsights';
 import { ProductPreset } from '../types/product';
 import { Lap, LapType } from '../types/timer';
-import { sessionAnalytics } from '../services/sessionAnalytics';
 import { toast } from 'react-hot-toast';
 
 interface ActiveSessionProps {
@@ -62,214 +43,89 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
   onUndo,
   onHome
 }) => {
-  const [showEffectTracker, setShowEffectTracker] = useState(false);
-  const [currentPhase, setCurrentPhase] = useState<'pre-onset' | 'onset' | 'peak' | 'tail' | 'after'>('pre-onset');
-  const [phaseProgress, setPhaseProgress] = useState(0);
-  const [metabolismRate, setMetabolismRate] = useState(0);
-  const [nextPhaseTime, setNextPhaseTime] = useState<number | null>(null);
-  const [showInsight, setShowInsight] = useState(false);
-  const [currentInsight, setCurrentInsight] = useState<string>('');
-  const [effectHistory, setEffectHistory] = useState<Array<{ time: number; strength: number }>>([]);
-  const [showVisualization, setShowVisualization] = useState<'alkaloid' | 'wave' | 'both'>('both');
-  const [showHelp, setShowHelp] = useState(false);
-  const [firstTimeUser, setFirstTimeUser] = useState(true);
+  const [currentPhase, setCurrentPhase] = useState<'waiting' | 'onset' | 'peak' | 'comedown'>('waiting');
+  const [doseCount, setDoseCount] = useState(1); // Track number of doses
+  const [totalDose, setTotalDose] = useState(preset.dose);
+  const [showInfo, setShowInfo] = useState(false);
 
-  // Start analytics session when timer starts
-  useEffect(() => {
-    if (state === 'running' && elapsed === 0 && preset.product) {
-      sessionAnalytics.startSession(
-        preset.product.id || '',
-        preset.dose,
-        preset.product.ingestion === 'capsule' ? 'capsules' : 'grams'
-      );
-      
-      // Show first-time help
-      if (firstTimeUser) {
-        setTimeout(() => {
-          setCurrentInsight('Tap "Log Effect" to track how you\'re feeling at any time');
-          setShowInsight(true);
-          setFirstTimeUser(false);
-        }, 3000);
-      }
-    }
-  }, [state, elapsed, preset, firstTimeUser]);
-
-  // End analytics session when timer stops
-  useEffect(() => {
-    if (state === 'stopped' && elapsed > 0) {
-      sessionAnalytics.endSession();
-    }
-  }, [state, elapsed]);
-
-  // Log laps to analytics
-  const handleLap = (type?: LapType, notes?: string) => {
-    onLap(type, notes);
-    if (state === 'running') {
-      sessionAnalytics.logLap(notes);
-    }
-  };
-
-  const handleEffectLog = (strength: number, notes?: string) => {
-    setEffectHistory(prev => [...prev, { time: elapsed, strength }]);
-    sessionAnalytics.logEffect(strength, [], notes);
-    setShowEffectTracker(false);
+  // Add dose
+  const handleAddDose = useCallback(() => {
+    const newCount = doseCount + 1;
+    const newTotal = totalDose + preset.dose;
+    setDoseCount(newCount);
+    setTotalDose(newTotal);
     
-    // Show encouraging feedback
-    setCurrentInsight(strength === 0 
-      ? 'Thanks for logging! It\'s normal not to feel effects yet'
-      : `Effect logged: ${strength}/10. Your pattern is building!`
-    );
-    setShowInsight(true);
-  };
-  
-  // Calculate current phase and progress
+    // Log as a lap
+    onLap('custom', `Added dose #${newCount}: ${preset.dose}${preset.doseUnit} (Total: ${newTotal}${preset.doseUnit})`);
+    
+    toast.success(`Dose #${newCount} added`, {
+      duration: 2000,
+      position: 'top-center',
+      style: {
+        background: 'rgba(34, 197, 94, 0.2)',
+        color: '#fff',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(34, 197, 94, 0.3)',
+      },
+      icon: '✨',
+    });
+  }, [doseCount, totalDose, preset, onLap]);
+
+  // Calculate current phase based on elapsed time
   useEffect(() => {
     const elapsedMin = elapsed / 60000;
-    const { product } = preset;
-    
-    if (!product) return;
-    
-    const onset = product.expectedOnset || 10;
-    const peak = product.expectedPeak || 45;
-    const duration = product.expectedDuration || 120;
-    
-    let phase: typeof currentPhase;
-    let progress: number;
-    let nextTime: number | null = null;
-    
+    const onset = preset?.product?.expectedOnset || 10;
+    const peak = preset?.product?.expectedPeak || 45;
+    const duration = preset?.product?.expectedDuration || 120;
+
     if (elapsedMin < onset) {
-      phase = 'pre-onset';
-      progress = (elapsedMin / onset) * 100;
-      nextTime = onset - elapsedMin;
+      setCurrentPhase('waiting');
     } else if (elapsedMin < peak) {
-      phase = 'onset';
-      progress = ((elapsedMin - onset) / (peak - onset)) * 100;
-      nextTime = peak - elapsedMin;
+      setCurrentPhase('onset');
     } else if (elapsedMin < peak + 30) {
-      phase = 'peak';
-      progress = ((elapsedMin - peak) / 30) * 100;
-      nextTime = (peak + 30) - elapsedMin;
-    } else if (elapsedMin < duration) {
-      phase = 'tail';
-      progress = ((elapsedMin - peak - 30) / (duration - peak - 30)) * 100;
-      nextTime = duration - elapsedMin;
+      setCurrentPhase('peak');
     } else {
-      phase = 'after';
-      progress = 100;
-      nextTime = null;
+      setCurrentPhase('comedown');
     }
-    
-    setCurrentPhase(phase);
-    setPhaseProgress(progress);
-    setNextPhaseTime(nextTime);
-    
-    // Calculate metabolism rate based on phase
-    let rate = 0;
-    if (phase === 'pre-onset') rate = progress * 0.3;
-    else if (phase === 'onset') rate = 30 + progress * 0.5;
-    else if (phase === 'peak') rate = 80 + progress * 0.2;
-    else if (phase === 'tail') rate = 100 - progress * 0.5;
-    else rate = 50 - Math.min(50, (elapsedMin - duration) * 2);
-    
-    setMetabolismRate(Math.max(0, Math.min(100, rate)));
-  }, [elapsed, preset, currentPhase]);
+  }, [elapsed, preset]);
 
-  // Generate contextual insights
-  useEffect(() => {
-    const elapsedMin = elapsed / 60000;
-    const { product } = preset;
-    if (!product) return;
+  // Format elapsed time
+  const formatTime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
 
-    // Generate phase-specific insights
-    const insights: Record<typeof currentPhase, string[]> = {
-      'pre-onset': [
-        `${product.name} typically begins in ${Math.ceil(nextPhaseTime || 0)} minutes`,
-        'Your body is beginning to absorb the alkaloids',
-        'Stay hydrated - it helps with absorption'
-      ],
-      'onset': [
-        `Approaching peak in ${Math.ceil(nextPhaseTime || 0)} minutes`,
-        'Alkaloids are binding to your receptors',
-        'This is when most users feel the first effects'
-      ],
-      'peak': [
-        'You\'re experiencing peak alkaloid activity',
-        `This intensity typically lasts ${Math.ceil(nextPhaseTime || 0)} more minutes`,
-        'Your receptors are maximally engaged'
-      ],
-      'tail': [
-        'Effects are gradually tapering',
-        `About ${Math.ceil(nextPhaseTime || 0)} minutes remaining`,
-        'Your body is metabolizing the alkaloids'
-      ],
-      'after': [
-        'Session complete - effects should be minimal',
-        'Consider logging your overall experience',
-        'Your tolerance may be slightly elevated for 4-6 hours'
-      ]
-    };
-
-    // Show insight at phase transitions and key moments
-    if (phaseProgress < 5 || (phaseProgress > 45 && phaseProgress < 55)) {
-      const phaseInsights = insights[currentPhase];
-      const randomInsight = phaseInsights[Math.floor(Math.random() * phaseInsights.length)];
-      setCurrentInsight(randomInsight);
-      setShowInsight(true);
-      setTimeout(() => setShowInsight(false), 5000);
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
-  }, [currentPhase, phaseProgress, elapsed, preset, nextPhaseTime]);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
 
-  const formatNextPhase = (minutes: number | null) => {
-    if (!minutes) return '';
-    if (minutes < 1) return 'Less than a minute';
-    return `${Math.ceil(minutes)} min`;
+  const getPhaseColor = () => {
+    switch (currentPhase) {
+      case 'waiting': return 'text-blue-400';
+      case 'onset': return 'text-yellow-400';
+      case 'peak': return 'text-green-400';
+      case 'comedown': return 'text-purple-400';
+      default: return 'text-white';
+    }
   };
 
   const getPhaseLabel = () => {
-    const labels = {
-      'pre-onset': 'Waiting for Effects',
-      'onset': 'Effects Starting',
-      'peak': 'Peak Effects',
-      'tail': 'Winding Down',
-      'after': 'Session Complete'
-    };
-    return labels[currentPhase];
-  };
-
-  const getPhaseIcon = () => {
-    const icons = {
-      'pre-onset': <Clock className="w-4 h-4" />,
-      'onset': <TrendingUp className="w-4 h-4" />,
-      'peak': <Zap className="w-4 h-4" />,
-      'tail': <Activity className="w-4 h-4" />,
-      'after': <Sparkles className="w-4 h-4" />
-    };
-    return icons[currentPhase];
+    switch (currentPhase) {
+      case 'waiting': return 'Waiting for effects...';
+      case 'onset': return 'Effects starting';
+      case 'peak': return 'Peak effects';
+      case 'comedown': return 'Winding down';
+      default: return '';
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0E1A2F] relative overflow-hidden">
-      {/* Enhanced Particle Field Background */}
-      <ParticleField 
-        intensity={1.2}
-        interactive={true}
-        colorScheme={currentPhase === 'peak' ? 'aurora' : 'mixed'}
-        depth={true}
-      />
-      
-      {/* Ambient Background Effects */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-20 left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-40 right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-full blur-3xl animate-pulse delay-500" />
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0E1A2F] relative">
       {/* Navigation Bar */}
-      <motion.div 
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="relative z-10 flex items-center justify-between p-6"
-      >
+      <div className="relative z-10 flex items-center justify-between p-6">
         <button
           onClick={onHome}
           className="p-3 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-colors"
@@ -278,26 +134,14 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
           <Home className="w-5 h-5 text-white/80" />
         </button>
 
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowHelp(true)}
-            className="p-3 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-colors"
-            aria-label="Help"
-          >
-            <HelpCircle className="w-5 h-5 text-white/80" />
-          </button>
-          <button
-            onClick={() => setShowVisualization(prev => 
-              prev === 'alkaloid' ? 'wave' : 
-              prev === 'wave' ? 'both' : 'alkaloid'
-            )}
-            className="p-3 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-colors"
-            aria-label="Toggle Visualization"
-          >
-            <Eye className="w-5 h-5 text-white/80" />
-          </button>
-        </div>
-      </motion.div>
+        <button
+          onClick={() => setShowInfo(true)}
+          className="p-3 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-colors"
+          aria-label="Session Info"
+        >
+          <Info className="w-5 h-5 text-white/80" />
+        </button>
+      </div>
 
       {/* Main Content */}
       <div className="relative z-10 px-6 pb-32">
@@ -305,234 +149,98 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-6"
+          className="text-center mb-8"
         >
-          <h1 className="text-2xl font-semibold text-white mb-2">
-            {preset.product?.name || preset.name}
+          <h1 className="text-3xl font-bold text-white mb-2">
+            {preset.product?.name || preset.name || 'Session'}
           </h1>
-          <div className="flex items-center justify-center gap-4 text-white/60">
-            <span>{preset.dose} {preset.product?.ingestion === 'capsule' ? 'capsules' : 'g'}</span>
-            <span>•</span>
-            <span className="flex items-center gap-1">
-              {getPhaseIcon()}
-              {getPhaseLabel()}
+          <div className="flex items-center justify-center gap-3">
+            <span className="text-white/60">
+              {totalDose} {preset.doseUnit || 'g'} total
+            </span>
+            <span className="text-white/40">•</span>
+            <span className="text-white/60">
+              {doseCount} {doseCount === 1 ? 'dose' : 'doses'}
             </span>
           </div>
         </motion.div>
 
-        {/* Visualization Area with Labels */}
-        <div className="relative h-64 mb-8">
-          {/* Visualization Label */}
-          <div className="absolute top-2 left-2 z-10 bg-black/50 backdrop-blur-xl rounded-lg px-3 py-1.5 border border-white/10">
-            <p className="text-xs text-white/60">
-              {showVisualization === 'alkaloid' && 'Alkaloid Activity'}
-              {showVisualization === 'wave' && 'Your Effect Pattern'}
-              {showVisualization === 'both' && 'Activity & Effects'}
-            </p>
-          </div>
-          
-          <AnimatePresence>
-            {(showVisualization === 'alkaloid' || showVisualization === 'both') && (
-              <motion.div
-                key="alkaloid"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className={showVisualization === 'both' ? 'absolute inset-0' : ''}
-              >
-                <MolecularAnimation
-                  phase={currentPhase}
-                  metabolismRate={metabolismRate}
-                  alkaloids={preset.product?.alkaloids || {}}
-                />
-              </motion.div>
-            )}
-            
-            {(showVisualization === 'wave' || showVisualization === 'both') && (
-              <motion.div
-                key="wave"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: showVisualization === 'both' ? 0.7 : 1 }}
-                exit={{ opacity: 0 }}
-                className={showVisualization === 'both' ? 'absolute inset-0' : ''}
-              >
-                <EffectWave
-                  effectHistory={effectHistory}
-                  currentTime={elapsed}
-                  expectedPeak={preset.product?.expectedPeak || 45}
-                  expectedDuration={preset.product?.expectedDuration || 120}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Interactive Timer with Phase Ring */}
+        {/* Timer Display */}
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="mb-8"
+          className="mb-12"
         >
-          <InteractiveTimer
-            elapsed={elapsed}
-            state={state as any}
-            onStart={onStart}
-            onPause={onPause}
-            onResume={onResume}
-            onStop={onEnd}
-            onLogIntensity={(intensity) => {
-              // Log intensity as a lap
-              const intensityMap: { [key: number]: LapType } = {
-                1: 'no-effect', 2: 'no-effect', 3: 'onset',
-                4: 'onset', 5: 'onset', 6: 'peak',
-                7: 'peak', 8: 'peak', 9: 'tail', 10: 'tail'
-              };
-              const lapType = intensityMap[intensity] || 'custom';
-              onLap(lapType, `Intensity: ${intensity}/10`);
-              
-              // Show toast feedback
-              toast(`Logged intensity: ${intensity}/10`, {
-                duration: 2000,
-                position: 'top-center',
-                style: {
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  color: '#fff',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                },
-                icon: '✨',
-              });
-              
-              // Update effect history
-              setEffectHistory(prev => [...prev, { time: elapsed, strength: intensity }]);
-            }}
-            onLogDetail={() => {
-              setShowEffectTracker(true);
-            }}
-            phaseInfo={{
-              current: currentPhase,
-              progress: phaseProgress / 100,
-              times: {
-                onset: preset?.product?.timing?.onset ? preset.product.timing.onset * 60000 : 600000,
-                peak: preset?.product?.timing?.peak ? preset.product.timing.peak * 60000 : 2700000,
-                tail: preset?.product?.timing?.duration ? preset.product.timing.duration * 60000 : 5400000
-              }
-            }}
-          />
-        </motion.div>
-
-        {/* Phase Progress Bar with Better Labels */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="mb-8 px-4"
-        >
-          <div className="flex items-center justify-between mb-2 text-sm text-white/60">
-            <span>{getPhaseLabel()}</span>
-            {nextPhaseTime && (
-              <span>Next phase in: {formatNextPhase(nextPhaseTime)}</span>
-            )}
-          </div>
-          <div className="h-2 bg-white/10 rounded-full overflow-hidden backdrop-blur-xl">
-            <motion.div
-              className="h-full bg-gradient-to-r from-[#1DA1FF] to-[#007AFF]"
-              initial={{ width: 0 }}
-              animate={{ width: `${phaseProgress}%` }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            />
+          <div className="text-center">
+            <div className="text-7xl font-mono font-bold text-white mb-4">
+              {formatTime(elapsed)}
+            </div>
+            <div className={`text-lg font-medium ${getPhaseColor()}`}>
+              {getPhaseLabel()}
+            </div>
           </div>
         </motion.div>
 
-        {/* Contextual Insights */}
-        <AnimatePresence>
-          {showInsight && (
-            <SessionInsights
-              insight={currentInsight}
-              phase={currentPhase}
-              onDismiss={() => setShowInsight(false)}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Quick Actions with Clearer Labels */}
+        {/* Add Dose Button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <p className="text-xs text-white/40 text-center mb-3">Quick Actions</p>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowEffectTracker(true)}
-              className="flex-1 py-3 px-4 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-all flex flex-col items-center gap-1 relative"
-              aria-label="Log how you're feeling"
-            >
-              <Brain className="w-5 h-5 text-[#1DA1FF]" />
-              <span className="text-white/80 text-xs">Log Effect</span>
-              <span className="text-white/40 text-[10px]">How you feel</span>
-              {effectHistory.length === 0 && (
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#1DA1FF] rounded-full animate-pulse" />
-              )}
-            </button>
-            
-            <button
-              onClick={() => {
-                handleLap('hydration', 'Stayed hydrated');
-                setCurrentInsight('Great job staying hydrated! 💧');
-                setShowInsight(true);
-              }}
-              className="flex-1 py-3 px-4 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-all flex flex-col items-center gap-1"
-              aria-label="Log water intake"
-            >
-              <Droplet className="w-5 h-5 text-blue-400" />
-              <span className="text-white/80 text-xs">Hydrate</span>
-              <span className="text-white/40 text-[10px]">Log water</span>
-            </button>
-            
-            <button
-              onClick={() => {
-                const note = prompt('Add a note about this session:');
-                if (note) {
-                  handleLap('note', note);
-                  setCurrentInsight('Note added to your session');
-                  setShowInsight(true);
-                }
-              }}
-              className="flex-1 py-3 px-4 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-all flex flex-col items-center gap-1"
-              aria-label="Add a note"
-            >
-              <MessageCircle className="w-5 h-5 text-purple-400" />
-              <span className="text-white/80 text-xs">Note</span>
-              <span className="text-white/40 text-[10px]">Add thought</span>
-            </button>
-          </div>
+          <button
+            onClick={handleAddDose}
+            className="w-full py-4 rounded-2xl bg-gradient-to-r from-green-500/20 to-green-600/20 backdrop-blur-xl border border-green-500/30 hover:from-green-500/30 hover:to-green-600/30 transition-all flex items-center justify-center gap-3"
+            disabled={state === 'stopped'}
+          >
+            <Plus className="w-6 h-6 text-green-400" />
+            <span className="text-white text-lg font-medium">
+              Add {preset.dose} {preset.doseUnit || 'g'} Dose
+            </span>
+          </button>
         </motion.div>
 
-        {/* Bell Curve with Label */}
+        {/* Bell Curve */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
           className="mb-8"
         >
-          <p className="text-xs text-white/40 text-center mb-3">Expected Timeline</p>
+          <div className="text-xs text-white/40 text-center mb-3">Expected Timeline</div>
           <BellCurve
             elapsed={elapsed}
             laps={laps || []}
-            expectedOnset={preset?.product?.timing?.onset ? preset.product.timing.onset * 60000 : 600000}
-            expectedPeak={preset?.product?.timing?.peak ? preset.product.timing.peak * 60000 : 2700000}
-            expectedTail={preset?.product?.timing?.duration ? preset.product.timing.duration * 60000 : 5400000}
+            expectedOnset={(preset?.product?.expectedOnset || 10) * 60000}
+            expectedPeak={(preset?.product?.expectedPeak || 45) * 60000}
+            expectedTail={(preset?.product?.expectedDuration || 120) * 60000}
           />
         </motion.div>
 
-        {/* Lap List */}
+        {/* Dose History */}
         {laps && laps.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="mb-8"
           >
-            <LapList laps={laps} onUndo={onUndo} />
+            <div className="text-xs text-white/40 text-center mb-3">Session Events</div>
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {laps.slice().reverse().map((lap) => (
+                <div
+                  key={lap.id}
+                  className="py-2 px-4 rounded-xl bg-white/5 backdrop-blur-xl border border-white/10"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/80 text-sm">
+                      {lap.note || lap.type}
+                    </span>
+                    <span className="text-white/40 text-xs">
+                      {formatTime(lap.elapsed)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </motion.div>
         )}
       </div>
@@ -590,26 +298,15 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
         </div>
       </motion.div>
 
-      {/* Effect Tracker Modal */}
+      {/* Info Modal */}
       <AnimatePresence>
-        {showEffectTracker && (
-          <EffectTracker
-            onLog={handleEffectLog}
-            onClose={() => setShowEffectTracker(false)}
-            currentPhase={currentPhase}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Help Modal */}
-      <AnimatePresence>
-        {showHelp && (
+        {showInfo && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowHelp(false)}
+            onClick={() => setShowInfo(false)}
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
@@ -619,62 +316,50 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-white">Session Guide</h2>
+                <h2 className="text-xl font-semibold text-white">Session Details</h2>
                 <button
-                  onClick={() => setShowHelp(false)}
+                  onClick={() => setShowInfo(false)}
                   className="p-2 rounded-full hover:bg-white/10 transition-colors"
                 >
                   <X className="w-5 h-5 text-white/60" />
                 </button>
               </div>
               
-              <div className="space-y-4 text-sm">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-blue-500/20">
-                    <Brain className="w-4 h-4 text-blue-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">Log Effects</p>
-                    <p className="text-white/60 text-xs">Track how you're feeling on a scale of 0-10</p>
-                  </div>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-white/60 text-sm mb-1">Product</p>
+                  <p className="text-white font-medium">
+                    {preset.product?.name || 'Unknown'}
+                  </p>
                 </div>
                 
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-purple-500/20">
-                    <Eye className="w-4 h-4 text-purple-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">Visualizations</p>
-                    <p className="text-white/60 text-xs">Particles show alkaloid activity, waves show your effects</p>
-                  </div>
+                <div>
+                  <p className="text-white/60 text-sm mb-1">Total Consumed</p>
+                  <p className="text-white font-medium">
+                    {totalDose} {preset.doseUnit || 'g'} ({doseCount} {doseCount === 1 ? 'dose' : 'doses'})
+                  </p>
                 </div>
                 
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-green-500/20">
-                    <TrendingUp className="w-4 h-4 text-green-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">Session Phases</p>
-                    <p className="text-white/60 text-xs">Waiting → Starting → Peak → Winding Down</p>
-                  </div>
+                <div>
+                  <p className="text-white/60 text-sm mb-1">Session Time</p>
+                  <p className="text-white font-medium">
+                    {formatTime(elapsed)}
+                  </p>
                 </div>
                 
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-yellow-500/20">
-                    <Sparkles className="w-4 h-4 text-yellow-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">Smart Insights</p>
-                    <p className="text-white/60 text-xs">Get helpful tips based on your session phase</p>
-                  </div>
+                <div>
+                  <p className="text-white/60 text-sm mb-1">Current Phase</p>
+                  <p className={`font-medium ${getPhaseColor()}`}>
+                    {getPhaseLabel()}
+                  </p>
                 </div>
               </div>
               
               <button
-                onClick={() => setShowHelp(false)}
+                onClick={() => setShowInfo(false)}
                 className="w-full mt-6 py-3 rounded-full bg-gradient-to-r from-[#1DA1FF] to-[#007AFF] text-white font-medium"
               >
-                Got it!
+                Close
               </button>
             </motion.div>
           </motion.div>
