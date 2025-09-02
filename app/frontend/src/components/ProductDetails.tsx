@@ -9,7 +9,8 @@ import {
   ChevronLeft,
   Play,
   Save,
-  Beaker
+  Beaker,
+  ChevronRight
 } from 'lucide-react';
 import { Product, ProductPreset } from '../types/product';
 
@@ -31,7 +32,8 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
   
   const handleStartSession = () => {
     const preset: ProductPreset = {
-      id: `preset-${Date.now()}`,      productId: product.id,
+      id: `preset-${Date.now()}`,
+      productId: product.id,
       product: product,
       dose: dose,
       doseUnit: doseUnit,
@@ -63,13 +65,14 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
       case 'Very Strong': return 'text-red-400';
       default: return 'text-white/60';
     }
-  };  
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen"
+      className="min-h-screen pb-32" // Added padding bottom for button
       style={{
         background: 'linear-gradient(135deg, #0a4f3c 0%, #083028 50%, #041a15 100%)'
       }}
@@ -95,7 +98,8 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
       <div className="max-w-4xl mx-auto p-6">
         {/* Product Header */}
         <motion.div 
-          className="glass-panel p-6 mb-6"          initial={{ y: 20, opacity: 0 }}
+          className="glass-panel p-6 mb-6"
+          initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.1 }}
         >
@@ -120,11 +124,12 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
               <h1 className="text-3xl font-light text-white mb-2">{product.name}</h1>
               <p className="text-white/60 text-lg mb-4">{product.manufacturer}</p>
               
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
                 <span className={`px-3 py-1 rounded-full text-sm bg-${product.vein}-500/20 border border-${product.vein}-500/30`}>
                   {product.vein} Vein
                 </span>
-                <span className="px-3 py-1 rounded-full text-sm bg-white/10 border border-white/20">                  {product.strain}
+                <span className="px-3 py-1 rounded-full text-sm bg-white/10 border border-white/20">
+                  {product.strain}
                 </span>
                 <span className="px-3 py-1 rounded-full text-sm bg-white/10 border border-white/20">
                   {product.ingestion}
@@ -153,7 +158,8 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
           <div className="grid md:grid-cols-2 gap-6">
             {/* Dose Amount */}
             <div>
-              <label className="text-white/60 text-sm block mb-2">Amount</label>              <div className="flex items-center gap-4">
+              <label className="text-white/60 text-sm block mb-2">Amount</label>
+              <div className="flex items-center gap-4">
                 <input
                   type="range"
                   min="0.5"
@@ -182,7 +188,8 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
             <div>
               <label className="text-white/60 text-sm block mb-2">Method</label>
               <div className="grid grid-cols-2 gap-2">
-                {(['toss-wash', 'tea', 'capsule', 'mixed'] as const).map(m => (                  <button
+                {(['toss-wash', 'tea', 'capsule', 'mixed'] as const).map(m => (
+                  <button
                     key={m}
                     onClick={() => setMethod(m)}
                     className={`px-3 py-2 rounded-xl text-sm transition-all ${
@@ -210,54 +217,58 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
           </div>
         </motion.div>
         
-        {/* Alkaloid Profile & Timing */}
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
-          {/* Alkaloid Profile */}          <motion.div 
-            className="glass-panel p-6"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            <h3 className="text-lg font-light text-white mb-4 flex items-center gap-2">
-              <Zap className="w-5 h-5 text-green-400" />
-              Alkaloid Profile
-            </h3>
-            
-            {product.mitragynine && (
-              <div className="mb-3">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-white/60">Mitragynine</span>
-                  <span className="text-green-400">{product.mitragynine}%</span>
+        {/* Alkaloid Profile & Timing - Fixed for mobile */}
+        <div className="space-y-6 mb-6">
+          {/* Alkaloid Profile */}
+          {(product.mitragynine || product.hydroxymitragynine) && (
+            <motion.div 
+              className="glass-panel p-6"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <h3 className="text-lg font-light text-white mb-4 flex items-center gap-2">
+                <Zap className="w-5 h-5 text-green-400" />
+                Alkaloid Profile
+              </h3>
+              
+              {product.mitragynine && (
+                <div className="mb-3">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-white/60">Mitragynine</span>
+                    <span className="text-green-400">{product.mitragynine}%</span>
+                  </div>
+                  <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                    <motion.div 
+                      className="h-full bg-gradient-to-r from-green-500 to-green-400"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(product.mitragynine / 2) * 100}%` }}
+                      transition={{ delay: 0.5, duration: 1 }}
+                    />
+                  </div>
                 </div>
-                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                  <motion.div 
-                    className="h-full bg-gradient-to-r from-green-500 to-green-400"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(product.mitragynine / 2) * 100}%` }}
-                    transition={{ delay: 0.5, duration: 1 }}
-                  />
+              )}
+              
+              {product.hydroxymitragynine && (
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-white/60">7-Hydroxymitragynine</span>
+                    <span className="text-purple-400">{product.hydroxymitragynine}%</span>
+                  </div>
+                  <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                    <motion.div 
+                      className="h-full bg-gradient-to-r from-purple-500 to-purple-400"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(product.hydroxymitragynine / 0.1) * 100}%` }}
+                      transition={{ delay: 0.6, duration: 1 }}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
-            
-            {product.hydroxymitragynine && (
-              <div>
-                <div className="flex justify-between text-sm mb-1">                  <span className="text-white/60">7-Hydroxymitragynine</span>
-                  <span className="text-purple-400">{product.hydroxymitragynine}%</span>
-                </div>
-                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                  <motion.div 
-                    className="h-full bg-gradient-to-r from-purple-500 to-purple-400"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(product.hydroxymitragynine / 0.1) * 100}%` }}
-                    transition={{ delay: 0.6, duration: 1 }}
-                  />
-                </div>
-              </div>
-            )}
-          </motion.div>
+              )}
+            </motion.div>
+          )}
           
-          {/* Timing Expectations */}
+          {/* Expected Timeline - Fixed mobile layout */}
           <motion.div 
             className="glass-panel p-6"
             initial={{ y: 20, opacity: 0 }}
@@ -269,24 +280,31 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
               Expected Timeline
             </h3>
             
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-white/60">Onset</span>
-                <span className="text-green-400">{product.expectedOnset || '10-15'} min</span>              </div>
+                <span className="text-green-400 font-medium">
+                  {product.expectedOnset || '10-15'} min
+                </span>
+              </div>
               <div className="flex items-center justify-between">
                 <span className="text-white/60">Peak</span>
-                <span className="text-yellow-400">{product.expectedPeak || '30-45'} min</span>
+                <span className="text-yellow-400 font-medium">
+                  {product.expectedPeak || '30-45'} min
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-white/60">Duration</span>
-                <span className="text-orange-400">{product.expectedDuration || '90-120'} min</span>
+                <span className="text-orange-400 font-medium">
+                  {product.expectedDuration || '90-120'} min
+                </span>
               </div>
             </div>
           </motion.div>
         </div>
         
         {/* Effects & Warnings */}
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
+        <div className="space-y-6 mb-6">
           {/* Expected Effects */}
           {product.effects && (
             <motion.div 
@@ -302,7 +320,8 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
               <div className="flex flex-wrap gap-2">
                 {product.effects.map(effect => (
                   <span key={effect} className="px-3 py-1 rounded-full text-sm bg-green-500/10 border border-green-500/20 text-green-300">
-                    {effect}                  </span>
+                    {effect}
+                  </span>
                 ))}
               </div>
             </motion.div>
@@ -332,31 +351,42 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
           )}
         </div>
         
-        {/* Start Session Button */}
-        <motion.div           initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="flex justify-center"
-        >
-          <button
-            onClick={handleStartSession}
-            className="glass-button-primary px-12 py-4 text-lg group"
-          >
-            <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            <span>Start Session</span>
-          </button>
-        </motion.div>
-        
         {/* Legal Disclaimer */}
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="text-center mt-8 text-white/40 text-xs"
+          className="text-center mt-8 mb-4 text-white/40 text-xs"
         >
           Informational only. Not medical advice. Always consult healthcare providers.
         </motion.div>
       </div>
+
+      {/* Fixed Start Session Button - High contrast and always visible */}
+      <motion.div 
+        initial={{ y: 100 }}
+        animate={{ y: 0 }}
+        transition={{ delay: 0.3, type: "spring", stiffness: 100 }}
+        className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 to-transparent"
+        style={{
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)'
+        }}
+      >
+        <button
+          onClick={handleStartSession}
+          className="w-full max-w-md mx-auto flex items-center justify-center gap-3 py-4 px-8 rounded-2xl font-semibold text-lg shadow-2xl transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+          style={{
+            background: 'linear-gradient(135deg, #10B981 0%, #14B8A6 100%)',
+            color: '#000',
+            boxShadow: '0 10px 40px rgba(16, 185, 129, 0.4)'
+          }}
+        >
+          <Play className="w-6 h-6" />
+          <span>Start Session</span>
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      </motion.div>
     </motion.div>
   );
 };
