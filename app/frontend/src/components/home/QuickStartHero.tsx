@@ -159,13 +159,7 @@ export const QuickStartHero: React.FC<QuickStartHeroProps> = ({ onStartSession, 
         )}
       </div>
       
-      {/* Add shimmer keyframes */}
-      <style jsx>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(200%); }
-        }
-      `}</style>
+
     </motion.div>
   );
 };
