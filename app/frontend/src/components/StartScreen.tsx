@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Play, BarChart3, History, Settings } from 'lucide-react';
+import { Logo } from './Logo';
 
 interface StartScreenProps {
   onStartSession: () => void;
@@ -31,9 +32,12 @@ export const StartScreen: React.FC<StartScreenProps> = ({
 
       {/* Top Navigation */}
       <div className="relative z-10 flex items-center justify-between p-6">
-        <div className="text-white">
-          <h1 className="text-2xl font-bold">MaengMe</h1>
-          <p className="text-white/60 text-sm">Track your sessions</p>
+        <div className="flex items-center gap-3">
+          <Logo size={48} animate={true} />
+          <div>
+            <h1 className="text-2xl font-bold text-white">MaengMe</h1>
+            <p className="text-white/60 text-sm">Track your sessions</p>
+          </div>
         </div>
         
         <div className="flex gap-2">

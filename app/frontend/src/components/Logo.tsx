@@ -5,12 +5,14 @@ interface LogoProps {
   size?: number;
   animate?: boolean;
   className?: string;
+  variant?: 'default' | 'icon' | 'full';
 }
 
 export const Logo: React.FC<LogoProps> = ({ 
   size = 96, 
   animate = false,
-  className = ''
+  className = '',
+  variant = 'default'
 }) => {
   return (
     <motion.div 
@@ -18,9 +20,9 @@ export const Logo: React.FC<LogoProps> = ({
       style={{ width: size, height: size }}
       animate={animate ? {
         filter: [
-          'drop-shadow(0 0 20px rgba(255, 255, 255, 0.3))',
-          'drop-shadow(0 0 40px rgba(255, 255, 255, 0.5))',
-          'drop-shadow(0 0 20px rgba(255, 255, 255, 0.3))',
+          'drop-shadow(0 0 20px rgba(29, 161, 255, 0.3))',
+          'drop-shadow(0 0 40px rgba(29, 161, 255, 0.6))',
+          'drop-shadow(0 0 20px rgba(29, 161, 255, 0.3))',
         ]
       } : {}}
       transition={{
@@ -36,40 +38,96 @@ export const Logo: React.FC<LogoProps> = ({
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* Outer circle */}
+        <defs>
+          {/* Gradient for modern look */}
+          <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#1DA1FF" />
+            <stop offset="100%" stopColor="#007AFF" />
+          </linearGradient>
+          
+          {/* Glass effect gradient */}
+          <linearGradient id="glassGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="rgba(255, 255, 255, 0.15)" />
+            <stop offset="100%" stopColor="rgba(255, 255, 255, 0.05)" />
+          </linearGradient>
+          
+          {/* Blur filter for glow */}
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        
+        {/* Background circle with gradient */}
+        <circle
+          cx="100"
+          cy="100"
+          r="95"
+          fill="url(#logoGradient)"
+          opacity="0.1"
+        />
+        
+        {/* Glass effect circle */}
         <circle
           cx="100"
           cy="100"
           r="90"
+          fill="url(#glassGradient)"
           stroke="rgba(255, 255, 255, 0.2)"
           strokeWidth="1"
         />
         
-        {/* M letter - Vision Pro style thin lines */}
+        {/* Modern M design - streamlined */}
+        <g filter="url(#glow)">
+          <path
+            d="M 40 140 L 40 60 L 70 120 L 100 60 L 130 120 L 160 60 L 160 140"
+            stroke="white"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+            opacity="0.95"
+          />
+          
+          {/* Center dot accent */}
+          <circle
+            cx="100"
+            cy="90"
+            r="4"
+            fill="white"
+            opacity="0.8"
+          />
+        </g>
+        
+        {/* Time indicator arcs */}
         <path
-          d="M 50 130 L 50 70 L 80 110 L 100 70 L 120 110 L 150 70 L 150 130"
-          stroke="rgba(255, 255, 255, 0.9)"
+          d="M 100 15 A 85 85 0 0 1 185 100"
+          stroke="url(#logoGradient)"
           strokeWidth="2"
           strokeLinecap="round"
-          strokeLinejoin="round"
           fill="none"
+          opacity="0.5"
         />
         
-        {/* Leaf accent */}
         <path
-          d="M 150 70 Q 165 55 180 60 Q 175 75 160 75 Q 155 72 150 70"
-          fill="rgba(255, 255, 255, 0.3)"
-          stroke="rgba(255, 255, 255, 0.5)"
-          strokeWidth="1"
+          d="M 15 100 A 85 85 0 0 1 100 15"
+          stroke="rgba(255, 255, 255, 0.3)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          fill="none"
+          opacity="0.5"
         />
         
-        {/* Subtle inner glow circle */}
+        {/* Subtle inner ring */}
         <circle
           cx="100"
           cy="100"
-          r="85"
-          stroke="rgba(255, 255, 255, 0.05)"
-          strokeWidth="1"
+          r="75"
+          stroke="rgba(255, 255, 255, 0.1)"
+          strokeWidth="0.5"
           fill="none"
         />
       </svg>
@@ -77,57 +135,51 @@ export const Logo: React.FC<LogoProps> = ({
   );
 };
 
-// Clock hand component for splash animation
-export const ClockHand: React.FC<{ size?: number }> = ({ size = 200 }) => {
+// App Icon version for PWA (simpler, bolder for small sizes)
+export const AppIcon: React.FC<{ size?: number }> = ({ size = 512 }) => {
   return (
-    <motion.div
-      className="absolute inset-0"
-      initial={{ rotate: -90, opacity: 0 }}
-      animate={{ 
-        rotate: 270,
-        opacity: [0, 1, 1, 0]
-      }}
-      transition={{
-        duration: 2,
-        ease: "easeInOut",
-        times: [0, 0.1, 0.9, 1]
-      }}
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 512 512"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
     >
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 200 200"
+      <defs>
+        <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#1DA1FF" />
+          <stop offset="100%" stopColor="#007AFF" />
+        </linearGradient>
+      </defs>
+      
+      {/* Background */}
+      <rect width="512" height="512" rx="112" fill="url(#bgGradient)" />
+      
+      {/* Glass overlay */}
+      <rect 
+        width="512" 
+        height="512" 
+        rx="112" 
+        fill="rgba(255, 255, 255, 0.1)" 
+      />
+      
+      {/* M Symbol - bold for visibility */}
+      <path
+        d="M 100 380 L 100 132 L 180 300 L 256 132 L 332 300 L 412 132 L 412 380"
+        stroke="white"
+        strokeWidth="24"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         fill="none"
-        style={{ filter: 'blur(1px)' }}
-      >
-        {/* Clock hand with gradient */}
-        <defs>
-          <linearGradient id="handGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="rgba(255, 255, 255, 0)" />
-            <stop offset="50%" stopColor="rgba(255, 255, 255, 0.5)" />
-            <stop offset="100%" stopColor="rgba(255, 255, 255, 0)" />
-          </linearGradient>
-        </defs>
-        
-        <line
-          x1="100"
-          y1="100"
-          x2="100"
-          y2="20"
-          stroke="url(#handGradient)"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-        
-        {/* Glow trail */}
-        <circle
-          cx="100"
-          cy="20"
-          r="8"
-          fill="rgba(255, 255, 255, 0.8)"
-          filter="blur(4px)"
-        />
-      </svg>
-    </motion.div>
+      />
+      
+      {/* Center accent */}
+      <circle
+        cx="256"
+        cy="216"
+        r="16"
+        fill="white"
+      />
+    </svg>
   );
 };
