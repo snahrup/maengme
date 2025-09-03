@@ -14,6 +14,8 @@ import { BellCurve } from './BellCurve';
 import { InteractiveTimer } from './InteractiveTimer';
 import { AdaptiveParticles } from './AdaptiveParticles';
 import { BreathingGlow } from './BreathingGlow';
+import { NeuralSynapseNetwork } from './NeuralSynapseNetwork';
+import { PredictivePeakIndicator } from './PredictivePeakIndicator';
 import { ProductPreset } from '../types/product';
 import { Lap, LapType } from '../types/timer';
 import { toast } from 'react-hot-toast';
@@ -50,6 +52,7 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
   const [totalDose, setTotalDose] = useState(preset.dose);
   const [showInfo, setShowInfo] = useState(false);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
+  const [synapseActive, setSynapseActive] = useState(false);
 
   // Add dose
   const handleAddDose = useCallback(() => {
@@ -104,12 +107,16 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
 
     if (elapsedMin < onset) {
       setCurrentPhase('waiting');
+      setSynapseActive(false);
     } else if (elapsedMin < peak) {
       setCurrentPhase('onset');
+      setSynapseActive(true);
     } else if (elapsedMin < peak + 30) {
       setCurrentPhase('peak');
+      setSynapseActive(true);
     } else {
       setCurrentPhase('comedown');
+      setSynapseActive(elapsedMin < peak + 45); // Fade out synapses
     }
   }, [elapsed, preset]);
 
@@ -137,6 +144,36 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
       return Math.max(0.2, 0.8 - comedownProgress * 0.6); // 0.8 to 0.2
     }
   }, [elapsed, preset]);
+
+  // Handle peak approaching/reached
+  const handlePeakApproaching = useCallback(() => {
+    toast('Peak approaching! 🚀', {
+      duration: 3000,
+      position: 'top-center',
+      style: {
+        background: 'rgba(251, 191, 36, 0.2)',
+        color: '#fff',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(251, 191, 36, 0.3)',
+      },
+      icon: '⚡',
+    });
+  }, []);
+
+  const handlePeakReached = useCallback(() => {
+    onLap('peak', 'Peak effects reached');
+    toast('Peak reached! 🎯', {
+      duration: 4000,
+      position: 'top-center',
+      style: {
+        background: 'rgba(52, 211, 153, 0.2)',
+        color: '#fff',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(52, 211, 153, 0.3)',
+      },
+      icon: '✨',
+    });
+  }, [onLap]);
 
   // Format elapsed time
   const formatTime = (ms: number) => {
@@ -181,6 +218,24 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
         historicalPeakTime={preset?.product?.expectedPeak ? preset.product.expectedPeak * 60000 : undefined}
         currentTime={elapsed}
       />
+      
+      {/* Neural Synapse Network - Phase 2 */}
+      <NeuralSynapseNetwork
+        phase={currentPhase}
+        intensity={intensity}
+        isActive={synapseActive && state === 'running'}
+      />
+      
+      {/* Predictive Peak Indicator - Phase 2 */}
+      {state === 'running' && (
+        <PredictivePeakIndicator
+          currentTime={elapsed}
+          productId={preset.productId}
+          expectedPeak={preset?.product?.expectedPeak}
+          onPeakApproaching={handlePeakApproaching}
+          onPeakReached={handlePeakReached}
+        />
+      )}
 
       {/* Navigation Bar */}
       <div className="relative z-10 flex items-center justify-between p-6">
