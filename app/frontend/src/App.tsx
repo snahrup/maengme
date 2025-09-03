@@ -63,25 +63,34 @@ function App() {
   
   // Handle start session with preset
   const handleStartWithPreset = useCallback((preset: ProductPreset) => {
-    console.log('handleStartWithPreset called with preset:', preset);
-    setActivePreset(preset);
-    setCurrentView('session');
-    console.log('View should now be session');
-    reset();
-    setLaps([]);
-    start();
-    startTimeRef.current = Date.now();
+    console.log('App: handleStartWithPreset called with preset:', preset);
+    console.log('App: Setting activePreset...');
     
-    // Save for quick start
-    const { setLastSession } = useQuickStartStore.getState();
-    if (preset.product) {
-      setLastSession(
-        preset.productId,
-        preset.product.name,
-        preset.dose,
-        preset.method
-      );
-    }
+    // Use setTimeout to ensure state updates happen
+    setActivePreset(preset);
+    
+    // Force a slight delay to ensure state is set
+    setTimeout(() => {
+      console.log('App: Setting currentView to session after delay...');
+      setCurrentView('session');
+      
+      // Reset timer and start
+      reset();
+      setLaps([]);
+      start();
+      startTimeRef.current = Date.now();
+      
+      // Save for quick start
+      const { setLastSession } = useQuickStartStore.getState();
+      if (preset.product) {
+        setLastSession(
+          preset.productId,
+          preset.product.name,
+          preset.dose,
+          preset.method
+        );
+      }
+    }, 100); // Small delay to ensure preset is set
   }, [start, reset]);  
   // Handle lap
   const handleLap = useCallback((type: LapType) => {
@@ -169,9 +178,22 @@ function App() {
   
   // Debug logging
   useEffect(() => {
-    console.log('Current view:', currentView);
-    console.log('Active preset:', activePreset);
-  }, [currentView, activePreset]);
+    console.log('App State Update:');
+    console.log('  - Current view:', currentView);
+    console.log('  - Active preset:', activePreset);
+    console.log('  - Selected product:', selectedProduct);
+    console.log('  - Timer state:', state);
+    
+    // Check if we should be showing session
+    if (currentView === 'session') {
+      console.log('View is session!');
+      if (!activePreset) {
+        console.warn('ERROR: Session view but no activePreset!');
+      } else {
+        console.log('SUCCESS: Session should be rendering');
+      }
+    }
+  }, [currentView, activePreset, selectedProduct, state]);
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0E1A2F] overflow-hidden">

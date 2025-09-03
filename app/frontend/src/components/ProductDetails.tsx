@@ -31,6 +31,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
   const [notes, setNotes] = useState('');
   
   const handleStartSession = () => {
+    console.log('ProductDetails: handleStartSession called');
     const preset: ProductPreset = {
       id: `preset-${Date.now()}`,
       productId: product.id,
@@ -43,6 +44,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
       useCount: 1
     };
     
+    console.log('ProductDetails: Calling onStartSession with preset:', preset);
     onStartSession(preset);
   };
   
