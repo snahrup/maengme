@@ -69,7 +69,7 @@ export const PredictivePeakIndicator: React.FC<PredictivePeakIndicatorProps> = (
         
         // Fallback: estimate based on session duration
         // Assume peak is around 40% of total duration
-        return session.duration * 0.4;
+        return session.totalElapsed * 0.4;
       })
       .filter(time => time > 0);
     
