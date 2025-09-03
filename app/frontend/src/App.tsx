@@ -13,6 +13,7 @@ import { StatsPage } from './components/StatsPage';
 import { ProductSelector } from './components/ProductSelector';
 import { ProductDetails } from './components/ProductDetails';
 import { ActiveSession } from './components/ActiveSession';
+import { ActiveSessionSimple } from './components/ActiveSessionSimple';
 import { HistoryView } from './components/HistoryView';
 import { DebugPanel } from './components/DebugPanel';
 import { Lap, LapType } from './types/timer';
@@ -65,16 +66,21 @@ function App() {
   const handleStartWithPreset = useCallback((preset: ProductPreset) => {
     console.log('App: handleStartWithPreset called');
     console.log('App: Preset:', preset);
+    console.log('App: Timer state before:', state);
     
     // Set both state values immediately
     setActivePreset(preset);
     setCurrentView('session');
     
-    // Start timer immediately
-    reset();
-    setLaps([]);
-    start();
-    startTimeRef.current = Date.now();
+    // Force timer to start after a brief delay to ensure render
+    setTimeout(() => {
+      console.log('App: Starting timer...');
+      reset();
+      setLaps([]);
+      start();
+      startTimeRef.current = Date.now();
+      console.log('App: Timer state after start:', state);
+    }, 100);
     
     // Save for quick start
     const { setLastSession } = useQuickStartStore.getState();
@@ -88,7 +94,7 @@ function App() {
     }
     
     console.log('App: Session should now be starting');
-  }, [start, reset]);
+  }, [start, reset, state]);
   
   // Handle lap
   const handleLap = useCallback((type?: LapType, notes?: string) => {
@@ -242,21 +248,36 @@ function App() {
             />
           )}
           
-          {currentView === 'session' && activePreset && (
-            <ActiveSession
-              key="session"
-              preset={activePreset}
-              elapsed={elapsed}
-              state={state === 'idle' || state === 'completed' ? 'stopped' : state}
-              laps={laps}
-              onStart={start}
-              onPause={pause}
-              onResume={resume}
-              onEnd={handleEnd}
-              onLap={handleLap}
-              onUndo={() => handleUndo(laps[laps.length - 1]?.id)}
-              onHome={handleBackToHome}
-            />
+          {currentView === 'session' && (
+            <>
+              {console.log('Session view active, activePreset:', activePreset)}
+              {!activePreset ? (
+                <div className="text-white p-8">
+                  ERROR: No active preset set!
+                  <button onClick={() => setCurrentView('home')} className="ml-4 p-2 bg-blue-500">
+                    Go Home
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {console.log('Rendering ActiveSession:', { currentView, activePreset, state, elapsed })}
+                  <ActiveSession
+                    key="session"
+                    preset={activePreset}
+                    elapsed={elapsed}
+                    state={state === 'idle' || state === 'completed' ? 'stopped' : state}
+                    laps={laps}
+                    onStart={start}
+                    onPause={pause}
+                    onResume={resume}
+                    onEnd={handleEnd}
+                    onLap={handleLap}
+                    onUndo={() => handleUndo(laps[laps.length - 1]?.id)}
+                    onHome={handleBackToHome}
+                  />
+                </>
+              )}
+            </>
           )}
         </AnimatePresence>
         

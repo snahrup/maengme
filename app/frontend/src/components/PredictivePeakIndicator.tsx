@@ -32,12 +32,23 @@ export const PredictivePeakIndicator: React.FC<PredictivePeakIndicatorProps> = (
   
   // Get historical sessions for this product
   const sessions = useLiveQuery(
-    () => db.sessions
-      .where('productName')
-      .equals(productId)
-      .reverse()
-      .limit(10)
-      .toArray(),
+    () => {
+      // Use try-catch to prevent crashes
+      try {
+        // Since we can't query by productId directly, get all sessions
+        // and filter by productPreset that contains the productId
+        return db.sessions
+          .toArray()
+          .then(allSessions => 
+            allSessions.filter(s => 
+              s.productPreset && s.productPreset.includes(productId)
+            ).slice(-10) // Get last 10
+          );
+      } catch (error) {
+        console.error('Error querying sessions:', error);
+        return [];
+      }
+    },
     [productId]
   ) || [];
   
