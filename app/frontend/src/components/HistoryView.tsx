@@ -8,6 +8,7 @@ import { Session } from '../types/timer';
 interface HistoryViewProps {
   onClose: () => void;
   onSelectSession?: (session: Session) => void;
+  onQuickStart?: (session: Session) => void; // Support both prop names for compatibility
 }
 
 const lapLabels = {
@@ -18,10 +19,13 @@ const lapLabels = {
   custom: 'Custom'
 };
 
-export const HistoryView: React.FC<HistoryViewProps> = ({ onClose, onSelectSession }) => {
+export const HistoryView: React.FC<HistoryViewProps> = ({ onClose, onSelectSession, onQuickStart }) => {
   const sessions = useLiveQuery(
     () => db.sessions.orderBy('createdAt').reverse().toArray()
   ) || [];
+  
+  // Use either callback prop
+  const handleSessionSelect = onSelectSession || onQuickStart;
   
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
@@ -62,7 +66,8 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ onClose, onSelectSessi
                 <motion.div
                   key={session.id}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => onSelectSession?.(session)}                  className="bg-glass-tint/40 backdrop-blur-chip rounded-glass p-4 border border-glass-stroke/30 cursor-pointer hover:border-glass-stroke/50 transition-colors"
+                  onClick={() => handleSessionSelect?.(session)}
+                  className="bg-glass-tint/40 backdrop-blur-chip rounded-glass p-4 border border-glass-stroke/30 cursor-pointer hover:border-glass-stroke/50 transition-colors"
                 >
                   <div className="flex justify-between items-start mb-2">
                     <div>

@@ -12,6 +12,7 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
     "date-fns": "^3.6.0",
     "dexie": "^4.0.8",
     "dexie-react-hooks": "^1.1.7",
