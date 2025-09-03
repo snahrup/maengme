@@ -61,46 +61,45 @@ function App() {
     setCurrentView('product-details');
   }, []);
   
-  // Handle start session with preset
+  // Handle start session with preset - FIXED VERSION
   const handleStartWithPreset = useCallback((preset: ProductPreset) => {
-    console.log('App: handleStartWithPreset called with preset:', preset);
-    console.log('App: Setting activePreset...');
+    console.log('App: handleStartWithPreset called');
+    console.log('App: Preset:', preset);
     
-    // Use setTimeout to ensure state updates happen
+    // Set both state values immediately
     setActivePreset(preset);
+    setCurrentView('session');
     
-    // Force a slight delay to ensure state is set
-    setTimeout(() => {
-      console.log('App: Setting currentView to session after delay...');
-      setCurrentView('session');
-      
-      // Reset timer and start
-      reset();
-      setLaps([]);
-      start();
-      startTimeRef.current = Date.now();
-      
-      // Save for quick start
-      const { setLastSession } = useQuickStartStore.getState();
-      if (preset.product) {
-        setLastSession(
-          preset.productId,
-          preset.product.name,
-          preset.dose,
-          preset.method
-        );
-      }
-    }, 100); // Small delay to ensure preset is set
-  }, [start, reset]);  
+    // Start timer immediately
+    reset();
+    setLaps([]);
+    start();
+    startTimeRef.current = Date.now();
+    
+    // Save for quick start
+    const { setLastSession } = useQuickStartStore.getState();
+    if (preset.product) {
+      setLastSession(
+        preset.productId,
+        preset.product.name,
+        preset.dose,
+        preset.method
+      );
+    }
+    
+    console.log('App: Session should now be starting');
+  }, [start, reset]);
+  
   // Handle lap
-  const handleLap = useCallback((type: LapType) => {
+  const handleLap = useCallback((type?: LapType, notes?: string) => {
     if (state !== 'running') return;
     
     const newLap: Lap = {
       id: Date.now().toString(),
-      type,
+      type: type || 'custom',
       elapsed,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      note: notes
     };
     
     setLaps(prev => [...prev, newLap]);
@@ -131,6 +130,7 @@ function App() {
     setActivePreset(null);
     setSelectedProduct(null);
   }, [stop, reset, elapsed, laps, saveSession, activePreset]);  
+  
   // Handle back navigation
   const handleBackToHome = useCallback(() => {
     if (state === 'running' || state === 'paused') {
@@ -176,24 +176,17 @@ function App() {
     }
   }, [start, reset]);
   
-  // Debug logging
+  // Debug logging - Enhanced
   useEffect(() => {
-    console.log('App State Update:');
-    console.log('  - Current view:', currentView);
-    console.log('  - Active preset:', activePreset);
-    console.log('  - Selected product:', selectedProduct);
-    console.log('  - Timer state:', state);
+    console.log('=== App State Update ===');
+    console.log('Current view:', currentView);
+    console.log('Active preset:', activePreset ? 'Set' : 'Not set');
+    console.log('Timer state:', state);
     
-    // Check if we should be showing session
-    if (currentView === 'session') {
-      console.log('View is session!');
-      if (!activePreset) {
-        console.warn('ERROR: Session view but no activePreset!');
-      } else {
-        console.log('SUCCESS: Session should be rendering');
-      }
+    if (currentView === 'session' && !activePreset) {
+      console.error('ERROR: Session view but no activePreset!');
     }
-  }, [currentView, activePreset, selectedProduct, state]);
+  }, [currentView, activePreset, state]);
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0E1A2F] overflow-hidden">
@@ -264,42 +257,25 @@ function App() {
               onUndo={() => handleUndo(laps[laps.length - 1]?.id)}
               onHome={handleBackToHome}
             />
-          )}          
-          {/* Fallback for session without preset (quick start) */}
-          {currentView === 'session' && !activePreset && (
-            <ActiveSession
-              key="session-quick"
-              preset={{
-                id: 'quick',
-                productId: 'unknown',
-                dose: 3,
-                doseUnit: 'g',
-                method: 'toss-wash'
-              }}
-              elapsed={elapsed}
-              state={state === 'idle' || state === 'completed' ? 'stopped' : state}
-              laps={laps}
-              onStart={start}
-              onPause={pause}
-              onResume={resume}
-              onEnd={handleEnd}
-              onLap={handleLap}
-              onUndo={() => handleUndo(laps[laps.length - 1]?.id)}
-              onHome={handleBackToHome}
-            />
           )}
         </AnimatePresence>
         
         {/* History Modal */}
         <AnimatePresence>
           {showHistory && (
-            <HistoryView onClose={() => setShowHistory(false)} />
+            <HistoryView
+              onClose={() => setShowHistory(false)}
+              onQuickStart={(session) => {
+                // TODO: Implement quick start from history
+                console.log('Quick start from:', session);
+              }}
+            />
           )}
         </AnimatePresence>
-        
-        {/* Toast Notifications */}
-        <Toaster position="top-center" />
       </div>
+      
+      {/* Toaster for notifications */}
+      <Toaster position="bottom-center" />
     </div>
   );
 }
